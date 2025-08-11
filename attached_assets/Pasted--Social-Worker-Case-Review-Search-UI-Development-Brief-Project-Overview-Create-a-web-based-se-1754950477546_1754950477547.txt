@@ -1,0 +1,200 @@
+# Social Worker Case Review Search UI - Development Brief
+
+## Project Overview
+Create a web-based search interface for social workers to find relevant NSPCC case reviews for early intervention and risk mitigation. The system should provide comprehensive, actionable insights from historical case reviews to inform current child protection decisions.
+
+## Core Functionality
+
+### Search Input
+- **Primary search box**: Natural language text input for social workers to describe their current case situation
+- **Examples of input**: 
+
+  **Example 1 - Detailed case note summary:**
+  "Emma, age 6, living with mother (24) and mother's new partner (31) of 8 months. Historical DV with Emma's father who has supervised contact monthly. Mother reports new partner 'loses temper' with Emma, particularly around bedtime routines. Emma has started bedwetting again after being dry for 2 years, teachers report she's withdrawn at school and reluctant to go home. Mother admits feeling 'caught in the middle' and worried about losing housing if partner leaves. Previous social services involvement 18 months ago due to neglect concerns when mother was struggling with depression post-separation."
+
+  **Example 2 - Multi-agency concern:**
+  "Jake (14) and Mia (11), parents separated 6 months ago. Father moved out following police callout for DV. Mother struggling with alcohol use - GP concerned about morning drinking, children often late/absent from school. Grandmother providing some support but lives 40 minutes away. Jake displaying aggressive behavior at school, suspended twice this term. Mia appears to be taking on caring responsibilities - teacher notes she's often tired and talks about 'looking after mummy.' Housing association report arrears and complaints about noise/disturbances from neighbors."
+
+  **Example 3 - Escalating risk scenario:**
+  "Liam, 18 months old, brought to A&E by mother with bruising to torso. Mother (17) states he fell down stairs while playing. Partner (23) not present - mother says he's at work but becomes evasive when asked details. Previous presentations include: minor burn to hand at 8 months (attributed to touching radiator), failure to thrive concerns at 6 months. Health visitor notes mother appears anxious during visits, limited eye contact with Liam. Maternal grandmother expresses concerns about partner's 'short fuse' but mother denies any problems. Social housing - frequent noise complaints from neighbors about shouting."
+
+  **Example 4 - Complex family dynamics:**
+  "Sophie (13) and Ryan (9) in kinship care with paternal aunt following mother's imprisonment for drug offenses 8 months ago. Father whereabouts unknown. Sophie self-harming and refusing to engage with school support. Talks about wanting to 'rescue' mother and feels responsible for family breakdown. Ryan presenting as compliant but bed-wetting and having nightmares. Aunt struggling financially and emotionally - reports feeling 'out of her depth' with Sophie's behavior. Recent contact with imprisoned mother has led to Sophie becoming more distressed and making threats to run away to find her."
+
+### Search Output Structure
+The system should display results with the following components:
+
+#### 1. **Key Information for Query** *(Generated on-the-fly)*
+- Contextual relevance score and explanation
+- Why this case review matches the current situation
+- Most relevant aspects of the match
+
+#### 2. **Direct Case Review Quotes** *(From database)*
+- Verbatim excerpts from the original case review
+- Highlighted sections most relevant to the query
+- Page/section references for full context
+
+#### 3. **AI-Generated Additional Advice** *(Generated on-the-fly)*
+- Actionable recommendations based on the case review findings
+- Specific intervention suggestions
+- Early warning signs to monitor
+- Questions for assessment consideration
+
+#### 4. **Case Review Summary** *(From database)*
+- Brief overview of the case circumstances
+- Key agencies involved
+- Primary outcomes and lessons learned
+- Age/demographics of children involved
+
+#### 5. **Interactive Case Timeline** *(From database)* - **CORE COMPONENT**
+**This is a critical feature requiring sophisticated visual presentation and user interaction capabilities.**
+
+- **Chronological event visualization** with clear date markers and event categorization
+- **Color-coded intervention points** (successful interventions in green, missed opportunities in red, delayed responses in amber)
+- **Multi-track timeline display** showing parallel tracks for:
+  - Child behavior/presentation changes
+  - Agency actions and decisions
+  - Family circumstances evolution
+  - Professional concerns and assessments
+- **Interactive hover details** for each timeline event with full context
+- **Escalation pattern highlighting** with visual indicators showing risk level changes
+- **Decision point markers** showing critical moments where different actions could have changed outcomes
+- **Agency response lag indicators** showing time delays between incidents and interventions
+- **Expandable detail panels** for each major event or intervention
+- **Pattern recognition highlights** showing recurring themes or missed patterns
+- **Downloadable/printable timeline** for case documentation and multi-agency meetings
+- **Comparative timeline view** when multiple relevant case reviews are found
+- **Mobile-optimized timeline** with touch-friendly navigation for field work
+
+**Visual Design Requirements:**
+- Clean, professional timeline interface (similar to legal case management tools)
+- Clear visual hierarchy distinguishing events, decisions, and outcomes
+- Accessibility features for screen readers and visual impairments
+- Print-friendly format for court reports and case conferences
+- Zoom functionality for detailed examination of specific time periods
+
+#### 6. **Relationship Model** *(From database)*
+- Family structure diagram/description
+- Professional network involved
+- Inter-agency relationships and communication
+- Power dynamics and influence patterns
+
+#### 7. **Direct Link** *(From database)*
+- Direct link to full NSPCC case review document
+- Section/page recommendations for focused reading
+- Related case reviews or follow-up reports
+
+#### 8. **Warning Signs** *(From database)*
+- Early indicators that were present but possibly overlooked
+- Behavioral changes in children
+- Environmental/family red flags
+- System/professional warning signs
+
+#### 9. **Risk Factors** *(From database)*
+- Individual risk factors (child, parent, family)
+- Environmental/contextual risks
+- Systemic/professional risks
+- Cumulative risk assessment insights
+
+#### 10. **Barriers** *(From database)*
+- Obstacles to effective intervention identified in the case
+- System barriers (resource, communication, legal)
+- Family engagement challenges
+- Professional/agency limitations
+
+## Technical Requirements
+
+### Frontend Interface
+- **Clean, professional design** suitable for social work environment
+- **Mobile-responsive** for field work access
+- **Fast search results** (sub-2 second response time)
+- **Accessibility compliant** (WCAG 2.1 AA standards)
+- **Secure authentication** for authorized social work professionals only
+
+### Search Functionality
+- **Natural language processing** for query understanding
+- **Semantic search capabilities** beyond keyword matching
+- **Relevance ranking** with confidence scores
+- **Filter options** (case age, child demographics, risk types, outcomes)
+- **Save/bookmark functionality** for case reference
+
+### Data Integration
+- **Database connectivity** for stored case review data
+- **Real-time AI generation** for query-specific advice and key information
+- **Vector database integration** for semantic similarity matching
+- **Caching system** for frequently accessed case reviews
+
+### User Experience Features
+- **Progressive disclosure** - show summary first, expand for details
+- **Copy-to-clipboard** functionality for quotes and advice
+- **Print-friendly formatting** for case file documentation
+- **Search history** for case continuity
+- **Export functionality** for case reports
+
+## Design Considerations
+
+### Professional Context
+- **Serious, trustworthy aesthetic** - this deals with child protection
+- **Clear information hierarchy** - critical information must be immediately visible
+- **Minimal cognitive load** - social workers are often under pressure
+- **Evidence-based presentation** - clear distinction between facts and AI recommendations
+
+### Ethical Requirements
+- **Data privacy protection** - no storage of search queries containing identifiable information
+- **Clear AI disclosure** - users must know which content is AI-generated
+- **Professional responsibility** - system should emphasize that AI advice supplements, not replaces, professional judgment
+- **Audit trail capability** - for professional accountability
+
+### Performance Requirements
+- **Sub-2 second initial search results**
+- **Progressive loading** for detailed information
+- **Offline capability** for previously viewed case reviews
+- **Low bandwidth optimization** for rural/mobile use
+
+## Content Guidelines
+
+### Tone and Language
+- **Professional but accessible** social work terminology
+- **Action-oriented** language for advice sections
+- **Empathetic** acknowledgment of case complexity
+- **Clear warnings** about limitations and professional judgment requirements
+
+### Information Prioritization
+1. **Immediate safety concerns** - highest priority
+2. **Intervention opportunities** - actionable next steps  
+3. **Assessment considerations** - what to explore further
+4. **Long-term risk factors** - ongoing monitoring needs
+5. **System coordination** - multi-agency considerations
+
+## Success Metrics
+- **Search relevance accuracy** (social worker ratings)
+- **Time to find relevant information** (efficiency measure)
+- **Intervention implementation** (advice uptake tracking)
+- **User satisfaction** (professional utility ratings)
+- **Case outcome correlation** (where ethically trackable)
+
+## Security and Compliance
+- **GDPR compliance** for EU users
+- **Social work professional standards** alignment
+- **Secure data transmission** (HTTPS, encrypted APIs)
+- **Role-based access control** (different levels for different professionals)
+- **Regular security audits** and penetration testing
+
+## Development Phases
+
+### Phase 1: Core Search Interface
+- Basic search input and results display
+- Database integration for stored content
+- Essential security and authentication
+
+### Phase 2: Advanced Features
+- AI-generated advice integration
+- Advanced filtering and sorting
+- User preference settings
+
+### Phase 3: Professional Tools
+- Export and reporting functionality
+- Case management integration
+- Advanced analytics and insights
+
+This system should serve as a critical professional tool that enhances social worker decision-making while maintaining the primacy of professional judgment and ethical responsibility in child protection work.
