@@ -1,0 +1,664 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NSPCC Case Review Search System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1F2937',
+                        secondary: '#3B82F6',
+                        success: '#10B981',
+                        warning: '#F59E0B',
+                        danger: '#EF4444',
+                        neutral: {
+                            50: '#F9FAFB',
+                            100: '#F3F4F6',
+                            200: '#E5E7EB',
+                            300: '#D1D5DB',
+                            400: '#9CA3AF',
+                            500: '#6B7280',
+                            600: '#4B5563',
+                            700: '#374151',
+                            800: '#1F2937',
+                            900: '#111827'
+                        }
+                    },
+                    fontFamily: {
+                        'sans': ['Inter', 'system-ui', 'sans-serif']
+                    }
+                }
+            }
+        };
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-neutral-50 font-sans">
+    <!-- Header -->
+    <header class="bg-white border-b border-neutral-200 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-4">
+                    <div class="flex-shrink-0">
+                        <h1 class="text-xl font-semibold text-primary">NSPCC Case Review Search</h1>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span class="text-sm text-neutral-600">Logged in as: Sarah Johnson, Social Worker</span>
+                    <button class="bg-neutral-100 hover:bg-neutral-200 text-neutral-700 px-3 py-2 rounded-md text-sm font-medium transition-colors">
+                        <i class="fas fa-user-circle mr-2"></i>Profile
+                    </button>
+                    <button class="bg-danger hover:bg-red-600 text-white px-3 py-2 rounded-md text-sm font-medium transition-colors">
+                        <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Search Section -->
+        <div class="bg-white rounded-lg shadow-sm border border-neutral-200 p-6 mb-8">
+            <div class="mb-4">
+                <label for="case-search" class="block text-sm font-medium text-neutral-700 mb-2">
+                    Describe your current case situation
+                </label>
+                <div class="relative">
+                    <textarea 
+                        id="case-search" 
+                        rows="4" 
+                        class="w-full px-4 py-3 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-secondary focus:border-transparent resize-none"
+                        placeholder="Example: Emma, age 6, living with mother (24) and mother's new partner (31) of 8 months. Historical DV with Emma's father who has supervised contact monthly. Mother reports new partner 'loses temper' with Emma, particularly around bedtime routines..."
+                        data-mock="true">Emma, age 6, living with mother (24) and mother's new partner (31) of 8 months. Historical DV with Emma's father who has supervised contact monthly. Mother reports new partner 'loses temper' with Emma, particularly around bedtime routines. Emma has started bedwetting again after being dry for 2 years, teachers report she's withdrawn at school and reluctant to go home.</textarea>
+                    <div class="absolute bottom-3 right-3 text-xs text-neutral-400">
+                        <span data-mock="true">245</span>/1000 characters
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Search Filters -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                <div>
+                    <label class="block text-sm font-medium text-neutral-700 mb-1">Child Age Range</label>
+                    <select class="w-full px-3 py-2 border border-neutral-300 rounded-md focus:ring-2 focus:ring-secondary focus:border-transparent">
+                        <option>Any age</option>
+                        <option selected>0-5 years</option>
+                        <option>6-11 years</option>
+                        <option>12-17 years</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-neutral-700 mb-1">Risk Type</label>
+                    <select class="w-full px-3 py-2 border border-neutral-300 rounded-md focus:ring-2 focus:ring-secondary focus:border-transparent">
+                        <option>All types</option>
+                        <option selected>Domestic violence</option>
+                        <option>Neglect</option>
+                        <option>Physical abuse</option>
+                        <option>Emotional abuse</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-neutral-700 mb-1">Case Outcome</label>
+                    <select class="w-full px-3 py-2 border border-neutral-300 rounded-md focus:ring-2 focus:ring-secondary focus:border-transparent">
+                        <option>All outcomes</option>
+                        <option>Successful intervention</option>
+                        <option>Ongoing support</option>
+                        <option>Case closure</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-neutral-700 mb-1">Review Date</label>
+                    <select class="w-full px-3 py-2 border border-neutral-300 rounded-md focus:ring-2 focus:ring-secondary focus:border-transparent">
+                        <option>Any date</option>
+                        <option>Last 2 years</option>
+                        <option>Last 5 years</option>
+                        <option>Last 10 years</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <button class="bg-secondary hover:bg-blue-600 text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center">
+                        <i class="fas fa-search mr-2"></i>Search Case Reviews
+                    </button>
+                    <button class="text-neutral-600 hover:text-neutral-800 px-4 py-3 rounded-lg transition-colors">
+                        <i class="fas fa-history mr-2"></i>Search History
+                    </button>
+                </div>
+                <div class="text-sm text-neutral-500">
+                    <i class="fas fa-info-circle mr-1"></i>
+                    Search queries are not stored for privacy protection
+                </div>
+            </div>
+        </div>
+
+        <!-- Search Results -->
+        <div class="space-y-8" id="search-results">
+            <!-- Results Header -->
+            <div class="bg-white rounded-lg shadow-sm border border-neutral-200 p-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 class="text-lg font-semibold text-primary">Search Results</h2>
+                        <p class="text-sm text-neutral-600 mt-1">Found <span data-mock="true">3</span> relevant case reviews in <span data-mock="true">1.2</span> seconds</p>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <button class="text-neutral-600 hover:text-neutral-800 px-3 py-2 rounded-md transition-colors">
+                            <i class="fas fa-download mr-2"></i>Export Results
+                        </button>
+                        <button class="text-neutral-600 hover:text-neutral-800 px-3 py-2 rounded-md transition-colors">
+                            <i class="fas fa-print mr-2"></i>Print
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Case Review Result Card 1 -->
+            <div class="bg-white rounded-lg shadow-sm border border-neutral-200 overflow-hidden">
+                <!-- Key Information Header -->
+                <div class="bg-gradient-to-r from-secondary to-blue-600 text-white p-6">
+                    <div class="flex items-start justify-between">
+                        <div>
+                            <div class="flex items-center space-x-2 mb-2">
+                                <span class="bg-white/20 text-white px-2 py-1 rounded-full text-xs font-medium">97% Match</span>
+                                <span class="bg-success text-white px-2 py-1 rounded-full text-xs font-medium">
+                                    <i class="fas fa-shield-alt mr-1"></i>Successful Intervention
+                                </span>
+                            </div>
+                            <h3 class="text-xl font-semibold mb-2">Similar Case: Domestic Violence & New Partner Concerns</h3>
+                            <p class="text-blue-100">This case review matches your situation regarding a young child showing regression behaviors in the context of a new partner with anger management issues and historical domestic violence.</p>
+                        </div>
+                        <button class="text-white hover:text-blue-200 transition-colors">
+                            <i class="fas fa-bookmark text-lg"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="p-6">
+                    <!-- AI-Generated Key Information -->
+                    <div class="mb-6">
+                        <div class="flex items-center space-x-2 mb-3">
+                            <i class="fas fa-robot text-secondary"></i>
+                            <h4 class="font-semibold text-primary">AI-Generated Key Information</h4>
+                            <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">AI Generated</span>
+                        </div>
+                        <div class="bg-blue-50 border-l-4 border-secondary p-4 rounded-r-lg">
+                            <h5 class="font-medium text-primary mb-2">Why this case matches (97% relevance):</h5>
+                            <ul class="text-sm text-neutral-700 space-y-1 list-disc list-inside">
+                                <li data-mock="true">Similar age child (6 years) with regression behaviors (bedwetting)</li>
+                                <li data-mock="true">New partner dynamics with anger management concerns</li>
+                                <li data-mock="true">Historical domestic violence context with supervised contact arrangements</li>
+                                <li data-mock="true">School-reported behavioral changes and reluctance to go home</li>
+                                <li data-mock="true">Mother expressing conflicted feelings about the situation</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Direct Case Review Quotes -->
+                    <div class="mb-6">
+                        <h4 class="font-semibold text-primary mb-3 flex items-center">
+                            <i class="fas fa-quote-left text-neutral-400 mr-2"></i>
+                            Direct Case Review Quotes
+                        </h4>
+                        <div class="space-y-3">
+                            <blockquote class="border-l-4 border-neutral-300 pl-4 py-2 bg-neutral-50 rounded-r-lg">
+                                <p class="text-neutral-700 text-sm italic" data-mock="true">"The 6-year-old child's sudden onset of bedwetting after 18 months of being dry was identified as a significant indicator of stress. Combined with the teacher's observations of withdrawal and reluctance to go home, this formed a clear pattern requiring immediate assessment."</p>
+                                <cite class="text-xs text-neutral-500 mt-1 block">— Case Review Section 3.2, Page 15</cite>
+                            </blockquote>
+                            <blockquote class="border-l-4 border-neutral-300 pl-4 py-2 bg-neutral-50 rounded-r-lg">
+                                <p class="text-neutral-700 text-sm italic" data-mock="true">"The mother's description of feeling 'caught in the middle' and fears about housing stability created a barrier to disclosure. The successful intervention involved addressing these practical concerns alongside the child protection issues."</p>
+                                <cite class="text-xs text-neutral-500 mt-1 block">— Case Review Section 4.1, Page 23</cite>
+                            </blockquote>
+                        </div>
+                        <button class="text-secondary hover:text-blue-600 text-sm mt-2 transition-colors">
+                            <i class="fas fa-copy mr-1"></i>Copy quotes to clipboard
+                        </button>
+                    </div>
+
+                    <!-- AI-Generated Additional Advice -->
+                    <div class="mb-6">
+                        <div class="flex items-center space-x-2 mb-3">
+                            <i class="fas fa-lightbulb text-warning"></i>
+                            <h4 class="font-semibold text-primary">AI-Generated Additional Advice</h4>
+                            <span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-xs">AI Generated</span>
+                        </div>
+                        <div class="bg-yellow-50 border-l-4 border-warning p-4 rounded-r-lg">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                                <div>
+                                    <h5 class="font-medium text-primary mb-2">Immediate Actions:</h5>
+                                    <ul class="text-neutral-700 space-y-1 list-disc list-inside" data-mock="true">
+                                        <li>Conduct joint home visit with police</li>
+                                        <li>Interview Emma separately from mother</li>
+                                        <li>Coordinate with school for ongoing monitoring</li>
+                                        <li>Assess housing stability and support options</li>
+                                    </ul>
+                                </div>
+                                <div>
+                                    <h5 class="font-medium text-primary mb-2">Assessment Questions:</h5>
+                                    <ul class="text-neutral-700 space-y-1 list-disc list-inside" data-mock="true">
+                                        <li>How does Emma respond to partner's presence?</li>
+                                        <li>What are the specific triggers for partner's anger?</li>
+                                        <li>What support does mother have outside the relationship?</li>
+                                        <li>How is the supervised contact with father working?</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-3 p-3 bg-red-50 border-l-4 border-danger rounded-r-lg">
+                            <p class="text-xs text-red-700">
+                                <i class="fas fa-exclamation-triangle mr-1"></i>
+                                <strong>Professional Responsibility Notice:</strong> This AI-generated advice supplements professional judgment and should not replace comprehensive assessment and multi-agency consultation.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Interactive Case Timeline - CORE COMPONENT -->
+                    <div class="mb-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <h4 class="font-semibold text-primary flex items-center">
+                                <i class="fas fa-clock text-neutral-400 mr-2"></i>
+                                Interactive Case Timeline
+                            </h4>
+                            <div class="flex items-center space-x-4">
+                                <div class="text-xs text-neutral-600 flex items-center space-x-4">
+                                    <span class="flex items-center"><span class="w-3 h-3 bg-success rounded-full mr-1"></span>Successful</span>
+                                    <span class="flex items-center"><span class="w-3 h-3 bg-warning rounded-full mr-1"></span>Delayed</span>
+                                    <span class="flex items-center"><span class="w-3 h-3 bg-danger rounded-full mr-1"></span>Missed</span>
+                                </div>
+                                <button class="text-secondary hover:text-blue-600 text-sm transition-colors">
+                                    <i class="fas fa-expand mr-1"></i>Full Screen
+                                </button>
+                                <button class="text-secondary hover:text-blue-600 text-sm transition-colors">
+                                    <i class="fas fa-download mr-1"></i>Export Timeline
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Timeline Container -->
+                        <div class="bg-neutral-50 rounded-lg p-6 border border-neutral-200">
+                            <!-- Timeline Header with Date Range -->
+                            <div class="flex items-center justify-between mb-6">
+                                <div class="text-sm text-neutral-600">
+                                    <span class="font-medium">Case Duration:</span> January 2023 - September 2023 (8 months)
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <button class="text-xs bg-white border border-neutral-300 px-3 py-1 rounded hover:bg-neutral-50 transition-colors">
+                                        6M View
+                                    </button>
+                                    <button class="text-xs bg-secondary text-white px-3 py-1 rounded hover:bg-blue-600 transition-colors">
+                                        Full Case
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Multi-Track Timeline -->
+                            <div class="relative">
+                                <!-- Timeline tracks -->
+                                <div class="space-y-8">
+                                    <!-- Track 1: Child Behavior/Presentation -->
+                                    <div class="relative">
+                                        <div class="flex items-center mb-3">
+                                            <h5 class="font-medium text-primary text-sm">Child Behavior & Presentation</h5>
+                                        </div>
+                                        <div class="relative h-16 bg-white rounded-lg border border-neutral-200 overflow-hidden">
+                                            <!-- Timeline base line -->
+                                            <div class="absolute top-1/2 left-0 right-0 h-0.5 bg-neutral-300 transform -translate-y-1/2"></div>
+                                            
+                                            <!-- Timeline events -->
+                                            <div class="absolute top-1/2 transform -translate-y-1/2 left-[10%]">
+                                                <div class="relative group cursor-pointer">
+                                                    <div class="w-4 h-4 bg-warning rounded-full border-2 border-white shadow-md hover:scale-110 transition-transform"></div>
+                                                    <div class="absolute bottom-6 left-1/2 transform -translate-x-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                                                        Jan 15: Started bedwetting again
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="absolute top-1/2 transform -translate-y-1/2 left-[25%]">
+                                                <div class="relative group cursor-pointer">
+                                                    <div class="w-4 h-4 bg-danger rounded-full border-2 border-white shadow-md hover:scale-110 transition-transform"></div>
+                                                    <div class="absolute bottom-6 left-1/2 transform -translate-x-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                                                        Feb 8: School reports withdrawal, reluctance to go home
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="absolute top-1/2 transform -translate-y-1/2 left-[70%]">
+                                                <div class="relative group cursor-pointer">
+                                                    <div class="w-4 h-4 bg-success rounded-full border-2 border-white shadow-md hover:scale-110 transition-transform"></div>
+                                                    <div class="absolute bottom-6 left-1/2 transform -translate-x-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                                                        Jul 22: Behavioral improvements noted
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Track 2: Agency Actions -->
+                                    <div class="relative">
+                                        <div class="flex items-center mb-3">
+                                            <h5 class="font-medium text-primary text-sm">Agency Actions & Decisions</h5>
+                                        </div>
+                                        <div class="relative h-16 bg-white rounded-lg border border-neutral-200 overflow-hidden">
+                                            <div class="absolute top-1/2 left-0 right-0 h-0.5 bg-neutral-300 transform -translate-y-1/2"></div>
+                                            
+                                            <div class="absolute top-1/2 transform -translate-y-1/2 left-[35%]">
+                                                <div class="relative group cursor-pointer">
+                                                    <div class="w-4 h-4 bg-warning rounded-full border-2 border-white shadow-md hover:scale-110 transition-transform"></div>
+                                                    <div class="absolute bottom-6 left-1/2 transform -translate-x-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                                                        Mar 5: Initial assessment started (2 weeks delay)
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="absolute top-1/2 transform -translate-y-1/2 left-[50%]">
+                                                <div class="relative group cursor-pointer">
+                                                    <div class="w-4 h-4 bg-success rounded-full border-2 border-white shadow-md hover:scale-110 transition-transform"></div>
+                                                    <div class="absolute bottom-6 left-1/2 transform -translate-x-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                                                        Apr 12: Multi-agency meeting arranged
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="absolute top-1/2 transform -translate-y-1/2 left-[65%]">
+                                                <div class="relative group cursor-pointer">
+                                                    <div class="w-4 h-4 bg-success rounded-full border-2 border-white shadow-md hover:scale-110 transition-transform"></div>
+                                                    <div class="absolute bottom-6 left-1/2 transform -translate-x-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                                                        Jun 15: Safety plan implemented
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Track 3: Family Circumstances -->
+                                    <div class="relative">
+                                        <div class="flex items-center mb-3">
+                                            <h5 class="font-medium text-primary text-sm">Family Circumstances</h5>
+                                        </div>
+                                        <div class="relative h-16 bg-white rounded-lg border border-neutral-200 overflow-hidden">
+                                            <div class="absolute top-1/2 left-0 right-0 h-0.5 bg-neutral-300 transform -translate-y-1/2"></div>
+                                            
+                                            <div class="absolute top-1/2 transform -translate-y-1/2 left-[5%]">
+                                                <div class="relative group cursor-pointer">
+                                                    <div class="w-4 h-4 bg-danger rounded-full border-2 border-white shadow-md hover:scale-110 transition-transform"></div>
+                                                    <div class="absolute bottom-6 left-1/2 transform -translate-x-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                                                        Jan 3: New partner moved in
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="absolute top-1/2 transform -translate-y-1/2 left-[45%]">
+                                                <div class="relative group cursor-pointer">
+                                                    <div class="w-4 h-4 bg-warning rounded-full border-2 border-white shadow-md hover:scale-110 transition-transform"></div>
+                                                    <div class="absolute bottom-6 left-1/2 transform -translate-x-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                                                        Apr 1: Housing concerns raised by mother
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="absolute top-1/2 transform -translate-y-1/2 left-[80%]">
+                                                <div class="relative group cursor-pointer">
+                                                    <div class="w-4 h-4 bg-success rounded-full border-2 border-white shadow-md hover:scale-110 transition-transform"></div>
+                                                    <div class="absolute bottom-6 left-1/2 transform -translate-x-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                                                        Aug 10: Housing support secured
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Date markers -->
+                                <div class="flex justify-between text-xs text-neutral-500 mt-4 px-2">
+                                    <span>Jan 2023</span>
+                                    <span>Mar 2023</span>
+                                    <span>May 2023</span>
+                                    <span>Jul 2023</span>
+                                    <span>Sep 2023</span>
+                                </div>
+                            </div>
+
+                            <!-- Timeline Legend & Controls -->
+                            <div class="mt-6 pt-4 border-t border-neutral-200">
+                                <div class="flex items-center justify-between">
+                                    <div class="text-xs text-neutral-600">
+                                        <strong>Key Insight:</strong> 2-week delay in initial assessment following behavioral changes. Housing support was crucial to successful intervention.
+                                    </div>
+                                    <button class="text-secondary hover:text-blue-600 text-sm transition-colors">
+                                        <i class="fas fa-chevron-down mr-1"></i>Show Detailed Events
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Additional Information Sections -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                        <!-- Case Review Summary -->
+                        <div class="bg-neutral-50 rounded-lg p-4 border border-neutral-200">
+                            <h4 class="font-semibold text-primary mb-3 flex items-center">
+                                <i class="fas fa-file-alt text-neutral-400 mr-2"></i>
+                                Case Review Summary
+                            </h4>
+                            <div class="text-sm space-y-2">
+                                <p><strong>Child Demographics:</strong> <span data-mock="true">Female, 6 years old</span></p>
+                                <p><strong>Key Agencies:</strong> <span data-mock="true">Children's Services, Police, School, Health Visitor</span></p>
+                                <p><strong>Primary Outcome:</strong> <span data-mock="true">Child remained at home with comprehensive safety plan</span></p>
+                                <p><strong>Lessons Learned:</strong> <span data-mock="true">Early behavioral indicators require immediate response; housing stability crucial for safety planning</span></p>
+                            </div>
+                        </div>
+
+                        <!-- Relationship Model -->
+                        <div class="bg-neutral-50 rounded-lg p-4 border border-neutral-200">
+                            <h4 class="font-semibold text-primary mb-3 flex items-center">
+                                <i class="fas fa-users text-neutral-400 mr-2"></i>
+                                Relationship Model
+                            </h4>
+                            <div class="text-sm space-y-2">
+                                <p><strong>Family Structure:</strong> <span data-mock="true">Single mother, new partner, child, non-resident father</span></p>
+                                <p><strong>Professional Network:</strong> <span data-mock="true">Social worker (lead), police liaison, school SENCO, health visitor</span></p>
+                                <p><strong>Support Systems:</strong> <span data-mock="true">Limited family support, strong school relationship</span></p>
+                                <p><strong>Power Dynamics:</strong> <span data-mock="true">Mother dependent on partner for housing; father maintains legal contact rights</span></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Warning Signs, Risk Factors, Barriers -->
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+                        <div class="bg-red-50 rounded-lg p-4 border border-red-200">
+                            <h4 class="font-semibold text-danger mb-3 flex items-center">
+                                <i class="fas fa-exclamation-triangle mr-2"></i>
+                                Warning Signs
+                            </h4>
+                            <ul class="text-sm text-red-700 space-y-1 list-disc list-inside">
+                                <li data-mock="true">Regression in toileting behavior</li>
+                                <li data-mock="true">School avoidance behaviors</li>
+                                <li data-mock="true">Withdrawal from peer interactions</li>
+                                <li data-mock="true">Mother's conflicted loyalties</li>
+                            </ul>
+                        </div>
+
+                        <div class="bg-orange-50 rounded-lg p-4 border border-orange-200">
+                            <h4 class="font-semibold text-warning mb-3 flex items-center">
+                                <i class="fas fa-shield-alt mr-2"></i>
+                                Risk Factors
+                            </h4>
+                            <ul class="text-sm text-orange-700 space-y-1 list-disc list-inside">
+                                <li data-mock="true">New partner with anger issues</li>
+                                <li data-mock="true">Historical domestic violence</li>
+                                <li data-mock="true">Housing insecurity</li>
+                                <li data-mock="true">Limited support network</li>
+                            </ul>
+                        </div>
+
+                        <div class="bg-yellow-50 rounded-lg p-4 border border-yellow-200">
+                            <h4 class="font-semibold text-yellow-700 mb-3 flex items-center">
+                                <i class="fas fa-barrier mr-2"></i>
+                                Identified Barriers
+                            </h4>
+                            <ul class="text-sm text-yellow-700 space-y-1 list-disc list-inside">
+                                <li data-mock="true">Mother's fear of homelessness</li>
+                                <li data-mock="true">Partner's resistance to involvement</li>
+                                <li data-mock="true">Limited therapeutic resources</li>
+                                <li data-mock="true">Complex contact arrangements</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Direct Link and Actions -->
+                    <div class="flex items-center justify-between pt-4 border-t border-neutral-200">
+                        <div class="flex items-center space-x-4">
+                            <a href="#" class="text-secondary hover:text-blue-600 text-sm transition-colors flex items-center">
+                                <i class="fas fa-external-link-alt mr-2"></i>
+                                View Full Case Review (NSPCC-CR-2023-047)
+                            </a>
+                            <span class="text-neutral-300">|</span>
+                            <button class="text-secondary hover:text-blue-600 text-sm transition-colors">
+                                <i class="fas fa-bookmark mr-1"></i>Bookmark for Case File
+                            </button>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <button class="bg-neutral-100 hover:bg-neutral-200 text-neutral-700 px-3 py-2 rounded-md text-sm transition-colors">
+                                <i class="fas fa-copy mr-2"></i>Copy Summary
+                            </button>
+                            <button class="bg-secondary hover:bg-blue-600 text-white px-3 py-2 rounded-md text-sm transition-colors">
+                                <i class="fas fa-download mr-2"></i>Export to Case File
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Additional Result Cards (Collapsed) -->
+            <div class="bg-white rounded-lg shadow-sm border border-neutral-200 overflow-hidden">
+                <div class="bg-gradient-to-r from-neutral-100 to-neutral-200 p-4">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-4">
+                            <span class="bg-neutral-600 text-white px-2 py-1 rounded-full text-xs font-medium">85% Match</span>
+                            <h3 class="font-semibold text-primary">Case Review: Multi-Agency Response to Family Violence</h3>
+                        </div>
+                        <button class="text-neutral-600 hover:text-neutral-800 transition-colors">
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                    </div>
+                    <p class="text-sm text-neutral-600 mt-2">Similar case involving delayed agency response and successful intervention through housing support...</p>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-sm border border-neutral-200 overflow-hidden">
+                <div class="bg-gradient-to-r from-neutral-100 to-neutral-200 p-4">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-4">
+                            <span class="bg-neutral-600 text-white px-2 py-1 rounded-full text-xs font-medium">78% Match</span>
+                            <h3 class="font-semibold text-primary">Case Review: Child Behavioral Regression in Domestic Violence Context</h3>
+                        </div>
+                        <button class="text-neutral-600 hover:text-neutral-800 transition-colors">
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                    </div>
+                    <p class="text-sm text-neutral-600 mt-2">Focus on early intervention strategies when children show regression behaviors...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Load More Results -->
+        <div class="text-center mt-8">
+            <button class="bg-white hover:bg-neutral-50 text-neutral-700 px-6 py-3 rounded-lg border border-neutral-300 transition-colors">
+                <i class="fas fa-plus mr-2"></i>Load More Results
+            </button>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-primary text-white mt-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div>
+                    <h3 class="font-semibold mb-4">NSPCC Case Review Search</h3>
+                    <p class="text-neutral-300 text-sm">Supporting social work professionals with evidence-based insights from historical case reviews.</p>
+                </div>
+                <div>
+                    <h3 class="font-semibold mb-4">Professional Resources</h3>
+                    <ul class="space-y-2 text-sm text-neutral-300">
+                        <li><a href="#" class="hover:text-white transition-colors">Professional Guidelines</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Training Materials</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Support Contacts</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="font-semibold mb-4">System Information</h3>
+                    <ul class="space-y-2 text-sm text-neutral-300">
+                        <li><a href="#" class="hover:text-white transition-colors">Privacy Policy</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Data Protection</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Technical Support</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-neutral-700 mt-8 pt-8 text-center text-sm text-neutral-400">
+                <p>&copy; 2024 NSPCC. This system is for authorized social work professionals only. All data is handled in accordance with GDPR and professional standards.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // TODO: Implement business logic, API calls, and state management
+        (function() {
+            // Scoped JavaScript for UI interactions
+            
+            // Search functionality placeholder
+            const searchButton = document.querySelector('button[class*="bg-secondary"]');
+            if (searchButton) {
+                searchButton.addEventListener('click', function() {
+                    // TODO: Implement actual search API call
+                    console.log('Search functionality would be implemented here');
+                });
+            }
+            
+            // Timeline interaction handlers
+            const timelineEvents = document.querySelectorAll('.group');
+            timelineEvents.forEach(event => {
+                event.addEventListener('click', function() {
+                    // TODO: Implement expandable event details
+                    console.log('Timeline event clicked - would show detailed information');
+                });
+            });
+            
+            // Collapsible result cards
+            const collapseButtons = document.querySelectorAll('[class*="fa-chevron-down"]');
+            collapseButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    // TODO: Implement card expansion/collapse
+                    console.log('Card expand/collapse would be implemented here');
+                });
+            });
+            
+            // Copy to clipboard functionality
+            const copyButtons = document.querySelectorAll('[class*="fa-copy"]');
+            copyButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    // TODO: Implement actual clipboard functionality
+                    console.log('Copy to clipboard functionality would be implemented here');
+                });
+            });
+            
+            // Export functionality
+            const exportButtons = document.querySelectorAll('[class*="fa-download"]');
+            exportButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    // TODO: Implement PDF/document export
+                    console.log('Export functionality would be implemented here');
+                });
+            });
+            
+        })();
+    </script>
+</body>
+</html>

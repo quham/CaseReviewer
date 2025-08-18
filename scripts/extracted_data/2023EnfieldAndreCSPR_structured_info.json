@@ -1,0 +1,67 @@
+{
+  "summary": "The Local Child Safeguarding Practice Review was initiated regarding Andre, a young person who was subject to a Child Protection Plan and a Youth Referral Order with Intensive Supervision and Surveillance. Andre was stabbed to death in a park, and the review identified learning around information sharing, duplication in systems, and difficulties in re-housing families. The review focused on the interaction between diversity and culture, the newly established adolescent safeguarding service, and practice and planning when working with parents with parental mental health.",
+  "agencies": [
+    "Enfield Safeguarding Children Partnership",
+    "National Child Safeguarding Review Panel",
+    "NSPCC",
+    "Association of Independent LSCB Chairs",
+    "Pupil Referral Unit (PRU)",
+    "Youth Offending Service (YOS)",
+    "Adolescent Safeguarding Service",
+    "Local Authority",
+    "Adult Mental Health Service"
+  ],
+  "recommendations": [
+    "Improve information sharing between agencies",
+    "Reduce duplication in systems that support working with young people",
+    "Address difficulties in re-housing families",
+    "Explore the interaction between diversity and culture in practice",
+    "Develop the newly established adolescent safeguarding service",
+    "Improve practice and planning when working with parents with parental mental health"
+  ],
+  "timeline": [
+    {
+      "date": "02.09.2021",
+      "event": "Rapid Review report submitted",
+      "type": "incident"
+    },
+    {
+      "date": "24th November 2021",
+      "event": "Conversation with practitioners who worked directly with Andre",
+      "type": "positive"
+    },
+    {
+      "date": "December 2021",
+      "event": "Further conversations with practitioners and family members",
+      "type": "positive"
+    },
+    {
+      "date": "January 2022",
+      "event": "Independent reviewer wrote to Andre's mother",
+      "type": "incident"
+    },
+    {
+      "date": "February 2022",
+      "event": "Independent reviewer made contact with Andre's mother through professionals",
+      "type": "incident"
+    },
+    {
+      "date": "May 2022",
+      "event": "Executive Summary provided to practitioners",
+      "type": "positive"
+    },
+    {
+      "date": "November 2022",
+      "event": "Teenager found guilty of murdering Andre",
+      "type": "incident"
+    }
+  ],
+  "risk_factors": [
+    "Parental mental health",
+    "Lack of information sharing between agencies",
+    "Duplication in systems that support working with young people",
+    "Difficulties in re-housing families",
+    "Cultural and diversity issues"
+  ],
+  "outcomes": "Andre was stabbed to death in a park, and the review identified areas for improvement in practice and service delivery. The review led to the development of an action plan to address the identified learning and recommendations."
+}

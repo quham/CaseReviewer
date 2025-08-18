@@ -21,8 +21,8 @@ export interface SearchResult {
   id: string;
   title: string;
   summary: string;
-  content: string;
-  childAge?: number;
+  details: string;
+  childAge?: number; // should this be a range
   riskTypes: string[];
   outcome?: string;
   reviewDate: string;
