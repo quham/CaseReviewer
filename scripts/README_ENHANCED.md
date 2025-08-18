@@ -46,7 +46,8 @@ OPENROUTER_BASE_URL=https://openrouter.ai/api/v1
 ## Installation
 
 ```bash
-pip install pypdf2 langchain-text-splitters google-genai scikit-learn pinecone python-dotenv requests
+pip install pypdf2 langchain-text-splitters scikit-learn pinecone python-dotenv requests sentence-transformers torch
+
 ```
 
 ## Usage
