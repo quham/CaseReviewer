@@ -1,6 +1,6 @@
-# Enhanced PDF to Pinecone Pipeline with LLM Information Extraction
+# Enhanced PDF to PostgreSQL Pipeline with Qwen3-Embedding-8B and LLM Information Extraction
 
-This enhanced version of the script now includes intelligent information extraction using OpenRouter LLM calls to extract structured data from NSPCC case review PDFs.
+This enhanced version of the script now includes intelligent information extraction using OpenRouter LLM calls and the state-of-the-art Qwen3-Embedding-8B model for creating high-quality embeddings from NSPCC case review PDFs.
 
 ## New Features
 
@@ -17,10 +17,18 @@ This enhanced version of the script now includes intelligent information extract
 - **Risk Factors**: Identified risk factors
 - **Outcomes**: Case outcomes and lessons learned
 
+### 🚀 Advanced Embedding Model
+- **Qwen3-Embedding-8B**: State-of-the-art multilingual embedding model
+- **4096 dimensions**: High-quality vector representations
+- **32k context length**: Handles long documents effectively
+- **100+ languages**: Multilingual support for diverse case materials
+- **Fallback support**: Automatic fallback to reliable alternative models
+
 ### 💾 Enhanced Data Storage
-- Structured information stored in Pinecone metadata
+- Structured information stored in PostgreSQL with pgvector
 - JSON files saved locally for each processed PDF
 - Rich metadata for better search and analysis
+- Vector similarity search for finding related cases
 
 ### 🔍 Advanced Querying
 - Query by structured criteria (agencies, recommendations, risk factors)
@@ -30,13 +38,8 @@ This enhanced version of the script now includes intelligent information extract
 ## Environment Variables Required
 
 ```bash
-# Pinecone Configuration
-PINECONE_API_KEY=your_pinecone_api_key_here
-PINECONE_ENVIRONMENT=us-east-1-aws
-PINECONE_INDEX_NAME=nspcc
-
-# Google Gemini Configuration
-GEMINI_API_KEY=your_gemini_api_key_here
+# PostgreSQL Configuration
+DATABASE_URL=postgresql://username:password@host:port/database
 
 # OpenRouter Configuration (for LLM calls)
 OPENROUTER_API_KEY=your_openrouter_api_key_here
@@ -46,15 +49,18 @@ OPENROUTER_BASE_URL=https://openrouter.ai/api/v1
 ## Installation
 
 ```bash
-pip install pypdf2 langchain-text-splitters scikit-learn pinecone python-dotenv requests sentence-transformers torch
+# Install from requirements file
+pip install -r requirements.txt
 
+# Or install manually
+pip install pypdf2 langchain-text-splitters scikit-learn python-dotenv requests sentence-transformers>=2.7.0 transformers>=4.51.0 torch huggingface-hub psycopg2-binary
 ```
 
 ## Usage
 
 ### Process a Single PDF
 ```python
-processor = PDFToPineconeProcessor()
+processor = PDFToPostgreSQLProcessor()
 processor.process_pdf("path/to/case_review.pdf")
 ```
 
@@ -80,29 +86,54 @@ processor.display_structured_info(structured_info)
 
 ## Output Structure
 
-### Pinecone Metadata
-Each chunk now includes:
-- Case summary
+### PostgreSQL Database Schema
+Each case review includes:
+- Case summary and content
 - Agencies involved
-- Key recommendations
-- Risk factors
-- Case outcomes
+- Risk factors and types
+- Timeline of events
+- Vector embeddings for similarity search
 - Processing timestamp
 
 ### Local JSON Files
 Structured information saved to `extracted_data/` directory:
 - `{filename}_structured_info.json`
 
-## LLM Model Used
-- **Model**: `anthropic/claude-3.5-sonnet` (via OpenRouter)
+## Models Used
+
+### LLM Model (via OpenRouter)
+- **Model**: Multiple models tried in order (Gemini, Llama, Qwen, Claude, Mistral)
 - **Temperature**: 0.1 (for consistent, factual output)
 - **Max Tokens**: 2000
 - **Task Type**: Structured information extraction
+
+### Embedding Model
+- **Primary**: `Qwen/Qwen3-Embedding-8B`
+- **Dimensions**: 4096
+- **Context Length**: 32k tokens
+- **Languages**: 100+ languages supported
+- **Fallback**: `sentence-transformers/all-MiniLM-L6-v2` (1024 dimensions)
+
+## Testing the Embedding Model
+
+Before running the main pipeline, test the Qwen3-Embedding-8B model:
+
+```bash
+# Test the embedding model
+python test_qwen_embedding.py
+
+# This will verify:
+# - Model can be loaded successfully
+# - Embeddings are created correctly
+# - Multilingual support works
+# - Fallback model is available if needed
+```
 
 ## Error Handling
 - Graceful fallback when LLM extraction fails
 - Detailed logging of extraction process
 - Continues processing even if individual extractions fail
+- Automatic fallback to alternative embedding models
 
 ## Benefits for Social Workers
 1. **Quick Case Overview**: Get summaries without reading entire documents
@@ -115,6 +146,7 @@ Structured information saved to `extracted_data/` directory:
 - LLM calls add processing time (~30-60 seconds per PDF)
 - Text limited to 8000 characters for API efficiency
 - Batch processing for multiple PDFs
-- Structured data cached in Pinecone for fast retrieval
+- Vector embeddings stored in PostgreSQL with pgvector for fast similarity search
+- Qwen3-Embedding-8B provides high-quality 4096-dimensional embeddings
 
 

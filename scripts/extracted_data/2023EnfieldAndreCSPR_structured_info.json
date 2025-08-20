@@ -1,67 +1,31 @@
 {
-  "summary": "The Local Child Safeguarding Practice Review was initiated regarding Andre, a young person who was subject to a Child Protection Plan and a Youth Referral Order with Intensive Supervision and Surveillance. Andre was stabbed to death in a park, and the review identified learning around information sharing, duplication in systems, and difficulties in re-housing families. The review focused on the interaction between diversity and culture, the newly established adolescent safeguarding service, and practice and planning when working with parents with parental mental health.",
+  "title": "Case Review: 2023EnfieldAndreCSPR.pdf",
+  "summary": "Case review document: 2023EnfieldAndreCSPR.pdf. Manual analysis required for detailed information.",
+  "content": " \nTitle:  Local child safeguarding practice re view re Andre.  \nLSCB:  Enfield Safe guarding Child ren Partnership  \nAuthor:  Enfield Safe guarding Child ren Partnership  \nDate of publication:  2023  \n \nThis case review report was deposited by the publishing LSCB(s) with the national SCR repository, a \npartnership between the Association of Independent LSCB Chairs and the NSPCC.   \nThis report is available online via the NSPCC Library Catalogue . \nCopyright of this report remains with the publishing LSCB(s) listed above.  \n \n \n \n \n  \n \n \n   \n \n    \n \n \n \n\n \n     \n \nFinal version for publication (v5) January 2023   \n 1 Local Child Safeguarding Practice Review re Andre  \n \nIntroduction  \n \n1. A Local Child Safeguarding Practice Review was initiated in Enfield regarding Andre \nafter the National Child Safeguarding Review Panel responded to the Rapid Review \nreport , submitted on 02.09.2021. At the time of his death, Andre  was subject to a Child \nProtection Plan and to a Youth Referral Or...",
+  "child_age": null,
+  "risk_types": [
+    "Mental Health"
+  ],
+  "outcome": "Manual analysis required for outcomes and lessons learned",
+  "review_date": null,
   "agencies": [
-    "Enfield Safeguarding Children Partnership",
-    "National Child Safeguarding Review Panel",
-    "NSPCC",
-    "Association of Independent LSCB Chairs",
-    "Pupil Referral Unit (PRU)",
-    "Youth Offending Service (YOS)",
-    "Adolescent Safeguarding Service",
-    "Local Authority",
-    "Adult Mental Health Service"
+    "Police",
+    "School",
+    "Gp"
   ],
-  "recommendations": [
-    "Improve information sharing between agencies",
-    "Reduce duplication in systems that support working with young people",
-    "Address difficulties in re-housing families",
-    "Explore the interaction between diversity and culture in practice",
-    "Develop the newly established adolescent safeguarding service",
-    "Improve practice and planning when working with parents with parental mental health"
-  ],
-  "timeline": [
-    {
-      "date": "02.09.2021",
-      "event": "Rapid Review report submitted",
-      "type": "incident"
-    },
-    {
-      "date": "24th November 2021",
-      "event": "Conversation with practitioners who worked directly with Andre",
-      "type": "positive"
-    },
-    {
-      "date": "December 2021",
-      "event": "Further conversations with practitioners and family members",
-      "type": "positive"
-    },
-    {
-      "date": "January 2022",
-      "event": "Independent reviewer wrote to Andre's mother",
-      "type": "incident"
-    },
-    {
-      "date": "February 2022",
-      "event": "Independent reviewer made contact with Andre's mother through professionals",
-      "type": "incident"
-    },
-    {
-      "date": "May 2022",
-      "event": "Executive Summary provided to practitioners",
-      "type": "positive"
-    },
-    {
-      "date": "November 2022",
-      "event": "Teenager found guilty of murdering Andre",
-      "type": "incident"
-    }
+  "warning_signs_early": [
+    "Manual extraction required"
   ],
   "risk_factors": [
-    "Parental mental health",
-    "Lack of information sharing between agencies",
-    "Duplication in systems that support working with young people",
-    "Difficulties in re-housing families",
-    "Cultural and diversity issues"
+    "Manual extraction required"
   ],
-  "outcomes": "Andre was stabbed to death in a park, and the review identified areas for improvement in practice and service delivery. The review led to the development of an action plan to address the identified learning and recommendations."
+  "barriers": [
+    "Manual extraction required"
+  ],
+  "relationship_model": {
+    "familyStructure": "Manual extraction required",
+    "professionalNetwork": "Manual extraction required",
+    "supportSystems": "Manual extraction required",
+    "powerDynamics": "Manual extraction required"
+  }
 }

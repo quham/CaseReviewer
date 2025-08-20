@@ -1,0 +1,17 @@
+# PDF processing and database setup dependencies
+PyPDF2
+langchain-text-splitters
+scikit-learn
+python-dotenv
+requests
+psycopg2-binary
+
+# AI and ML - Qwen3-Embedding-8B requirements
+sentence-transformers>=2.7.0
+transformers>=4.51.0
+torch
+huggingface-hub>=0.20.0,<0.21.0
+
+# Additional utilities
+numpy
+pathlib
