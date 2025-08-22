@@ -22,7 +22,6 @@ class OpenRouterInsightsService:
         # OpenRouter Configuration
         self.api_key = os.getenv('OPENROUTER_API_KEY')
         self.base_url = os.getenv('OPENROUTER_BASE_URL', 'https://openrouter.ai/api/v1')
-        # self.model = os.getenv('OPENROUTER_MODEL', 'meta-llama/llama-3.3-70b-instruct:free')
         
         # Model fallback list in order of preference
         self.models = [
