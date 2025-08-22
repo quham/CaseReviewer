@@ -3,8 +3,8 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent } from '@/components/ui/card';
+import { MultiSelect, type MultiSelectOption } from '@/components/ui/multi-select';
 import { Search, History, Info } from 'lucide-react';
 import { searchCaseReviews, type SearchFilters, type SearchResult } from '@/lib/search-api';
 import { useToast } from '@/hooks/use-toast';
@@ -21,6 +21,15 @@ export function SearchInterface({ onResults, onSearchStart, onSearchEnd }: Searc
   const [filters, setFilters] = useState<SearchFilters>({});
   const { toast } = useToast();
   const { searchHistoryEnabled } = usePreferencesStore();
+
+  const caseTypeOptions: MultiSelectOption[] = [
+    { value: 'child_abuse', label: 'Child Abuse' },
+    { value: 'neglect', label: 'Neglect' },
+    { value: 'domestic_violence', label: 'Domestic Violence' },
+    { value: 'sexual_abuse', label: 'Sexual Abuse' },
+    { value: 'emotional_abuse', label: 'Emotional Abuse' },
+    { value: 'other', label: 'Other' }
+  ];
 
   // Function to sort results by risk type matches
   const sortResultsByRiskType = (results: SearchResult[], selectedRiskTypes?: string[]): SearchResult[] => {
@@ -125,51 +134,17 @@ export function SearchInterface({ onResults, onSearchStart, onSearchEnd }: Searc
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <Label className="block text-sm font-medium text-neutral-700 mb-1">
-                Case Type {filters.riskType && filters.riskType.length > 0 && (
-                  <span className="ml-2 text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">
-                    {filters.riskType.length} selected
-                  </span>
-                )}
+                Case Type
               </Label>
-              <p className="text-xs text-neutral-500 mb-2">Select one or more case types (leave unchecked for all types)</p>
-              <div className="space-y-2">
-                {[
-                  { value: 'child_abuse', label: 'Child Abuse' },
-                  { value: 'neglect', label: 'Neglect' },
-                  { value: 'domestic_violence', label: 'Domestic Violence' },
-                  { value: 'sexual_abuse', label: 'Sexual Abuse' },
-                  { value: 'emotional_abuse', label: 'Emotional Abuse' },
-                  { value: 'other', label: 'Other' }
-                ].map((riskType) => (
-                  <div key={riskType.value} className="flex items-center space-x-2">
-                    <Checkbox
-                      id={riskType.value}
-                      checked={filters.riskType?.includes(riskType.value) || false}
-                      onCheckedChange={(checked) => {
-                        const currentTypes = filters.riskType || [];
-                        if (checked) {
-                          setFilters({ ...filters, riskType: [...currentTypes, riskType.value] });
-                        } else {
-                          setFilters({ ...filters, riskType: currentTypes.filter(type => type !== riskType.value) });
-                        }
-                      }}
-                    />
-                    <Label htmlFor={riskType.value} className="text-sm text-neutral-600 cursor-pointer">
-                      {riskType.label}
-                    </Label>
-                  </div>
-                ))}
-                {filters.riskType && filters.riskType.length > 0 && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-xs text-neutral-500 hover:text-neutral-700 mt-2 h-6 px-2"
-                    onClick={() => setFilters({ ...filters, riskType: undefined })}
-                  >
-                    Clear All
-                  </Button>
-                )}
-              </div>
+    
+              <MultiSelect
+                options={caseTypeOptions}
+                selected={filters.riskType || []}
+                onChange={(selected) => setFilters({ ...filters, riskType: selected.length > 0 ? selected : undefined })}
+                placeholder="Select case types..."
+                className="w-full"
+              />
+              <p className="text-xs text-neutral-500 mb-2">Select one or more case types (leave empty for all types)</p>
             </div>
             
             <div>

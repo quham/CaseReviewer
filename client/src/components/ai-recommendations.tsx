@@ -45,7 +45,7 @@ export function AIRecommendations({ recommendations }: AIRecommendationsProps) {
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center text-blue-800">
               <Lightbulb className="w-5 h-5 mr-2" />
-              AI Analysis of Your Search
+              Analysis of Your Search
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">

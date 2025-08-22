@@ -116,12 +116,6 @@ export function ResultCard({ result, isExpanded = false, selectedRiskTypes }: Re
                   Risk Type Match
                 </Badge>
               )}
-              {result.outcome && (
-                <Badge className={getOutcomeBadgeColor(result.outcome)}>
-                  <Shield className="w-3 h-3 mr-1" />
-                  {result.outcome}
-                </Badge>
-              )}
             </div>
             <h3 className="text-xl font-semibold mb-2" data-testid={`text-expanded-title-${result.id}`}>
               {result.title}
@@ -165,12 +159,7 @@ export function ResultCard({ result, isExpanded = false, selectedRiskTypes }: Re
                 {result.timeline_events.length} events
               </div>
             </div>
-            {/* Debug info */}
-            <div className="mb-2 p-2 bg-blue-50 rounded text-xs text-blue-700">
-              <strong>Debug:</strong> Timeline events count: {result.timeline_events.length}
-              <br />
-              <strong>Event IDs:</strong> {result.timeline_events.map(e => e.id).join(', ')}
-            </div>
+
             <CaseTimeline events={result.timeline_events} />
           </div>
         )}

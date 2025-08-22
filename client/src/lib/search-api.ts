@@ -1,7 +1,7 @@
 import { useAuthStore } from './auth';
 
 // API base URL - update this to match your backend
-const API_BASE_URL = 'http://localhost:8000';
+const API_BASE_URL = 'https://casereviewer.onrender.com';
 
 export interface SearchFilters {
   riskType?: string[];

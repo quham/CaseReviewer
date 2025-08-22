@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
 // API base URL - update this to match your backend
-const API_BASE_URL = 'http://localhost:8000';
+const API_BASE_URL = 'https://casereviewer.onrender.com';
 
 interface User {
   id: string;
