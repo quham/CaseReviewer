@@ -38,6 +38,7 @@ export interface SearchResult {
     powerDynamics: string;
   };
   source_file?: string;
+  documentUrl?: string;
   similarity_score: number;
   timeline_events: TimelineEvent[];
 }

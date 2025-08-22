@@ -8,14 +8,14 @@ interface AIRecommendationsProps {
 }
 
 export function AIRecommendations({ recommendations }: AIRecommendationsProps) {
-  // Add null checks and fallbacks for all properties
+  // Add null checks and fallbacks for all properties with proper typing
   const { 
-    query_analysis = {}, 
-    personalized_recommendations = {}, 
-    case_specific_insights = [], 
-    professional_development = {}, 
-    risk_management = {},
-    metadata = {}
+    query_analysis = {} as AIRecommendations['query_analysis'], 
+    personalized_recommendations = {} as AIRecommendations['personalized_recommendations'], 
+    case_specific_insights = [] as AIRecommendations['case_specific_insights'], 
+    professional_development = {} as AIRecommendations['professional_development'], 
+    risk_management = {} as AIRecommendations['risk_management'],
+    metadata = {} as AIRecommendations['metadata']
   } = recommendations;
 
   // Early return if no recommendations are available
@@ -56,7 +56,7 @@ export function AIRecommendations({ recommendations }: AIRecommendationsProps) {
                 <div>
                   <h4 className="font-semibold text-blue-800 mb-2">Key Patterns Identified</h4>
                   <div className="flex flex-wrap gap-2">
-                    {query_analysis.key_patterns.map((pattern, index) => (
+                    {query_analysis.key_patterns.map((pattern: string, index: number) => (
                       <Badge key={index} variant="secondary" className="bg-blue-100 text-blue-800">
                         {pattern}
                       </Badge>
@@ -69,7 +69,7 @@ export function AIRecommendations({ recommendations }: AIRecommendationsProps) {
                 <div>
                   <h4 className="font-semibold text-blue-800 mb-2">Risk Factors</h4>
                   <div className="flex flex-wrap gap-2">
-                    {query_analysis.risk_factors_identified.map((risk, index) => (
+                    {query_analysis.risk_factors_identified.map((risk: string, index: number) => (
                       <Badge key={index} variant="destructive" className="bg-red-100 text-red-800">
                         {risk}
                       </Badge>
@@ -100,20 +100,18 @@ export function AIRecommendations({ recommendations }: AIRecommendationsProps) {
                   Immediate Actions
                 </h4>
                 <div className="space-y-3">
-                  {personalized_recommendations.immediate_actions.map((action, index) => (
-                    <div key={index} className="bg-white p-3 rounded-lg border border-green-200">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <p className="font-medium text-gray-900">{action.action}</p>
-                          <p className="text-sm text-gray-600 mt-1">{action.rationale}</p>
-                        </div>
+                  {personalized_recommendations.immediate_actions.map((action: { action: string; rationale: string; priority: 'high' | 'medium' | 'low' }, index: number) => (
+                    <div key={index} className="bg-white rounded-lg p-4 border border-green-200">
+                      <div className="flex items-start justify-between mb-2">
+                        <h5 className="font-medium text-green-800">{action.action}</h5>
                         <Badge 
                           variant={action.priority === 'high' ? 'destructive' : action.priority === 'medium' ? 'default' : 'secondary'}
-                          className="ml-3"
+                          className="ml-2"
                         >
                           {action.priority}
                         </Badge>
                       </div>
+                      <p className="text-sm text-green-700">{action.rationale}</p>
                     </div>
                   ))}
                 </div>
@@ -128,15 +126,13 @@ export function AIRecommendations({ recommendations }: AIRecommendationsProps) {
                   Short-term Strategies
                 </h4>
                 <div className="space-y-3">
-                  {personalized_recommendations.short_term_strategies.map((strategy, index) => (
-                    <div key={index} className="bg-white p-3 rounded-lg border border-green-200">
-                      <p className="font-medium text-gray-900">{strategy.strategy}</p>
-                      <p className="text-sm text-gray-600 mt-1">
-                        <span className="font-medium">Expected Outcome:</span> {strategy.expected_outcome}
-                      </p>
-                      <p className="text-sm text-gray-600">
-                        <span className="font-medium">Timeline:</span> {strategy.timeline}
-                      </p>
+                  {personalized_recommendations.short_term_strategies.map((strategy: { strategy: string; expected_outcome: string; timeline: string }, index: number) => (
+                    <div key={index} className="bg-white rounded-lg p-4 border border-green-200">
+                      <h5 className="font-medium text-green-800 mb-2">{strategy.strategy}</h5>
+                      <div className="space-y-2 text-sm">
+                        <p><span className="font-medium text-green-700">Expected Outcome:</span> {strategy.expected_outcome}</p>
+                        <p><span className="font-medium text-green-700">Timeline:</span> {strategy.timeline}</p>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -151,15 +147,13 @@ export function AIRecommendations({ recommendations }: AIRecommendationsProps) {
                   Long-term Approaches
                 </h4>
                 <div className="space-y-3">
-                  {personalized_recommendations.long_term_approaches.map((approach, index) => (
-                    <div key={index} className="bg-white p-3 rounded-lg border border-green-200">
-                      <p className="font-medium text-gray-900">{approach.approach}</p>
-                      <p className="text-sm text-gray-600 mt-1">
-                        <span className="font-medium">Benefits:</span> {approach.benefits}
-                      </p>
-                      <p className="text-sm text-gray-600">
-                        <span className="font-medium">Considerations:</span> {approach.considerations}
-                      </p>
+                  {personalized_recommendations.long_term_approaches.map((approach: { approach: string; benefits: string; considerations: string }, index: number) => (
+                    <div key={index} className="bg-white rounded-lg p-4 border border-green-200">
+                      <h5 className="font-medium text-green-800 mb-2">{approach.approach}</h5>
+                      <div className="space-y-2 text-sm">
+                        <p><span className="font-medium text-green-700">Benefits:</span> {approach.benefits}</p>
+                        <p><span className="font-medium text-green-700">Considerations:</span> {approach.considerations}</p>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -184,7 +178,7 @@ export function AIRecommendations({ recommendations }: AIRecommendationsProps) {
                 <div>
                   <h4 className="font-semibold text-purple-800 mb-2">Learning Points</h4>
                   <ul className="space-y-2">
-                    {professional_development.learning_points.map((point, index) => (
+                    {professional_development.learning_points.map((point: string, index: number) => (
                       <li key={index} className="flex items-start">
                         <div className="w-2 h-2 bg-purple-400 rounded-full mt-2 mr-3 flex-shrink-0" />
                         <span className="text-sm text-gray-700">{point}</span>
@@ -198,11 +192,8 @@ export function AIRecommendations({ recommendations }: AIRecommendationsProps) {
                 <div>
                   <h4 className="font-semibold text-purple-800 mb-2">Skill Development</h4>
                   <ul className="space-y-2">
-                    {professional_development.skill_development.map((skill, index) => (
-                      <li key={index} className="flex items-start">
-                        <div className="w-2 h-2 bg-purple-400 rounded-full mt-2 mr-3 flex-shrink-0" />
-                        <span className="text-sm text-gray-700">{skill}</span>
-                      </li>
+                    {professional_development.skill_development.map((skill: string, index: number) => (
+                      <li key={index} className="text-sm text-purple-700">{skill}</li>
                     ))}
                   </ul>
                 </div>
@@ -227,7 +218,7 @@ export function AIRecommendations({ recommendations }: AIRecommendationsProps) {
                 <div>
                   <h4 className="font-semibold text-orange-800 mb-2">Current Risks</h4>
                   <div className="flex flex-wrap gap-2">
-                    {risk_management.current_risks.map((risk, index) => (
+                    {risk_management.current_risks.map((risk: string, index: number) => (
                       <Badge key={index} variant="destructive" className="bg-red-100 text-red-800 text-xs">
                         {risk}
                       </Badge>
@@ -240,10 +231,8 @@ export function AIRecommendations({ recommendations }: AIRecommendationsProps) {
                 <div>
                   <h4 className="font-semibold text-orange-800 mb-2">Mitigation Strategies</h4>
                   <ul className="space-y-1">
-                    {risk_management.mitigation_strategies.map((strategy, index) => (
-                      <li key={index} className="text-sm text-gray-700">
-                        • {strategy}
-                      </li>
+                    {risk_management.mitigation_strategies.map((strategy: string, index: number) => (
+                      <li key={index} className="text-sm text-orange-700">{strategy}</li>
                     ))}
                   </ul>
                 </div>
@@ -253,10 +242,8 @@ export function AIRecommendations({ recommendations }: AIRecommendationsProps) {
                 <div>
                   <h4 className="font-semibold text-orange-800 mb-2">Escalation Triggers</h4>
                   <ul className="space-y-1">
-                    {risk_management.escalation_triggers.map((trigger, index) => (
-                      <li key={index} className="text-sm text-gray-700">
-                        • {trigger}
-                      </li>
+                    {risk_management.escalation_triggers.map((trigger: string, index: number) => (
+                      <li key={index} className="text-sm text-orange-700">{trigger}</li>
                     ))}
                   </ul>
                 </div>
