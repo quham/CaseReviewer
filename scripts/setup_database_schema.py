@@ -90,7 +90,7 @@ class DatabaseSchemaSetup:
                         risk_factors JSONB DEFAULT '[]'::jsonb,
                         barriers JSONB DEFAULT '[]'::jsonb,
                         relationship_model JSONB DEFAULT '{}'::jsonb,
-                        embedding vector(1536), -- Adjust dimension based on your embedding model
+                        embedding vector(4096), -- Adjust dimension based on your embedding model
                         source_file TEXT,
                         file_hash TEXT UNIQUE,
                         created_at TIMESTAMP DEFAULT NOW(),
@@ -146,11 +146,11 @@ class DatabaseSchemaSetup:
                         event_date TEXT, -- Using TEXT for flexible date formats
                         event_type TEXT DEFAULT 'other',
                         description TEXT,
-                        impact TEXT,
+                        impact TEXT, 
                         created_at TIMESTAMP DEFAULT NOW(),
                         updated_at TIMESTAMP DEFAULT NOW()
                     )
-                """)
+                """) #add optional outcome successful, delayed, failed, missed intervention
                 
                 # Create indexes
                 cursor.execute("CREATE INDEX idx_timeline_events_case_review_id ON timeline_events(case_review_id)")

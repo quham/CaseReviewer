@@ -1,0 +1,6 @@
+add a fall back to give advice without matching cases if deepinfra doesn't provide embedding aka deepinfra_client doesn't work 
+improve fallback to use key terms searched and match on popularity or something
+
+
+
+2 issues right now i haven't created embeddings that match qwen model 

@@ -1,17 +1,18 @@
-# PDF processing and database setup dependencies
-PyPDF2
-langchain-text-splitters
-scikit-learn
-python-dotenv
-requests
-psycopg2-binary
+# Requirements for PDF to PostgreSQL Pipeline with Qwen3-Embedding-8B-Q8_0.gguf
+# Core dependencies
+pypdf2>=3.0.0
+langchain-text-splitters>=0.3.0
+scikit-learn>=1.0.0
+python-dotenv>=1.0.0
+requests>=2.25.0
+psycopg2-binary>=2.9.0
 
-# AI and ML - Qwen3-Embedding-8B requirements
-sentence-transformers>=2.7.0
-transformers>=4.51.0
-torch
-huggingface-hub>=0.20.0,<0.21.0
+# Embedding model dependencies
+llama-cpp-python>=0.2.0
+huggingface-hub>=0.19.0
 
-# Additional utilities
-numpy
-pathlib
+# Optional: PyTorch for device detection
+torch>=2.0.0
+
+# System utilities
+psutil>=5.8.0

@@ -8,6 +8,7 @@ import { useEffect } from "react";
 import SearchPage from "@/pages/search";
 import LoginPage from "@/pages/login";
 import NotFound from "@/pages/not-found";
+import ProfilePage from "@/pages/profile";
 
 function Router() {
   const { user, isLoading, checkAuth } = useAuthStore();
@@ -30,6 +31,7 @@ function Router() {
   return (
     <Switch>
       <Route path="/login" component={LoginPage} />
+      <Route path="/profile" component={user ? ProfilePage : LoginPage} />
       <Route path="/" component={user ? SearchPage : LoginPage} />
       <Route component={NotFound} />
     </Switch>

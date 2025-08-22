@@ -1,0 +1,22 @@
+# FastAPI and server dependencies
+fastapi
+uvicorn
+python-multipart
+
+# Database
+psycopg2-binary
+
+# AI and ML
+openai>=1.0.0
+numpy
+
+# Authentication and security
+PyJWT
+bcrypt
+
+# Environment and utilities
+python-dotenv
+pydantic
+
+# HTTP requests
+requests

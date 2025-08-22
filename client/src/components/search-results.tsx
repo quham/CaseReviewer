@@ -3,16 +3,20 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Download, Printer } from 'lucide-react';
 import { ResultCard } from './result-card';
-import type { SearchResult } from '@/lib/search-api';
+import { AIRecommendations } from './ai-recommendations';
+import type { SearchResult, AIRecommendations as AIRecommendationsType } from '@/lib/search-api';
 
 interface SearchResultsProps {
   results: SearchResult[];
   isLoading: boolean;
   searchTime: number;
   totalCount: number;
+  aiRecommendations?: AIRecommendationsType;
+  message?: string;
+  selectedRiskTypes?: string[];
 }
 
-export function SearchResults({ results, isLoading, searchTime, totalCount }: SearchResultsProps) {
+export function SearchResults({ results, isLoading, searchTime, totalCount, aiRecommendations, message, selectedRiskTypes }: SearchResultsProps) {
   if (isLoading) {
     return (
       <div className="space-y-8">
@@ -39,11 +43,29 @@ export function SearchResults({ results, isLoading, searchTime, totalCount }: Se
   }
 
   if (!results.length) {
-    return null;
+    return (
+      <Card>
+        <CardContent className="p-8 text-center">
+          <div className="text-neutral-500">
+            <h3 className="text-lg font-medium mb-2">
+              {message ? "Professional Guidance" : "No Results Found"}
+            </h3>
+            <p className="text-sm">
+              {message || "No case reviews matched your search criteria. Try adjusting your search terms or filters."}
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+    );
   }
 
   return (
     <div className="space-y-8" id="search-results">
+      {/* AI Recommendations - Display at the top */}
+      {aiRecommendations && (
+        <AIRecommendations recommendations={aiRecommendations} />
+      )}
+      
       {/* Results Header */}
       <Card>
         <CardContent className="p-4">
@@ -53,9 +75,25 @@ export function SearchResults({ results, isLoading, searchTime, totalCount }: Se
                 Search Results
               </h2>
               <p className="text-sm text-neutral-600 mt-1" data-testid="text-results-summary">
-                Found <span className="font-medium">{totalCount}</span> relevant case reviews in{' '}
-                <span className="font-medium">{(searchTime / 1000).toFixed(1)}</span> seconds
+                Found <span className="font-medium">{totalCount}</span> relevant case reviews
+                {searchTime > 0 && (
+                  <> in <span className="font-medium">{(searchTime / 1000).toFixed(1)}</span> seconds</>
+                )}
+                {aiRecommendations && ' with AI-powered insights'}
               </p>
+              {selectedRiskTypes && selectedRiskTypes.length > 0 && (
+                <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded-md">
+                  <p className="text-sm text-green-700">
+                    <span className="font-medium">
+                      {results.filter(result => 
+                        result.risk_types?.some(type => selectedRiskTypes.includes(type))
+                      ).length} of {totalCount}
+                    </span> cases match your selected risk types: {selectedRiskTypes.map(type => 
+                      type.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())
+                    ).join(', ')}
+                  </p>
+                </div>
+              )}
             </div>
             <div className="flex items-center space-x-2">
               <Button
@@ -87,6 +125,7 @@ export function SearchResults({ results, isLoading, searchTime, totalCount }: Se
           key={result.id}
           result={result}
           isExpanded={index === 0} // First result is expanded by default
+          selectedRiskTypes={selectedRiskTypes}
         />
       ))}
 

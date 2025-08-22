@@ -5,6 +5,7 @@ import os
 import json
 import psycopg2
 from psycopg2.extras import RealDictCursor, Json
+from psycopg2 import extensions
 from pathlib import Path
 from typing import List, Dict, Any, Optional
 import hashlib
@@ -13,13 +14,13 @@ from datetime import datetime
 from urllib.parse import urlparse
 
 # Required installations:
-# pip install pypdf2 langchain-text-splitters scikit-learn python-dotenv requests sentence-transformers psycopg2-binary
+# pip install pypdf2 langchain-text-splitters scikit-learn python-dotenv requests llama-cpp-python huggingface-hub psycopg2-binary
 # pip install torch --index-url https://download.pytorch.org/whl/cpu
 
 import PyPDF2
 # from langchain_text_splitters import RecursiveCharacterTextSplitter
 from dotenv import load_dotenv
-from sentence_transformers import SentenceTransformer
+# from sentence_transformers import SentenceTransformer
 import torch
 
 # Fix NumPy compatibility issues
@@ -77,8 +78,8 @@ class PDFToPostgreSQLProcessor:
         print(f"   User: {self.pg_user}")
     
     def setup_embeddings(self):
-        """Initialize the Qwen3-Embedding-8B embedding model"""
-        print("Setting up Qwen3-Embedding-8B embedding model...")
+        """Initialize the Qwen3-Embedding-8B-Q8_0.gguf embedding model with MPS support"""
+        print("Setting up Qwen3-Embedding-8B-Q8_0.gguf embedding model with MPS support...")
         import psutil
         import gc
 
@@ -89,34 +90,151 @@ class PDFToPostgreSQLProcessor:
             
         print_memory_usage()
         gc.collect()
-        if torch.cuda.is_available():
+        
+        # Check for MPS (Metal Performance Shaders) on macOS
+        if torch.backends.mps.is_available():
+            self.device = torch.device("mps")
+            print(f"🚀 Using MPS device (Apple Silicon GPU)")
+        elif torch.cuda.is_available():
+            self.device = torch.device("cuda")
             torch.cuda.empty_cache()
+            print(f"🚀 Using CUDA device")
+        else:
+            self.device = torch.device("cpu")
+            print(f"🚀 Using CPU device")
+        
         print_memory_usage()
         
         try:
-            # Use the Qwen3-Embedding-8B model from Hugging Face
-            model_name = "Qwen/Qwen3-Embedding-8B"
+            # Use the Qwen3-Embedding-8B-Q8_0.gguf model from JonathanMiddleton repository
+            model_name = "JonathanMiddleton/Qwen3-Embedding-8B-GGUF"
+            model_file = "Qwen3-Embedding-8B-Q8_0.gguf"
             
-            print(f"🔄 Loading {model_name}...")
-            self.embedding_model = SentenceTransformer(model_name)
+            print(f"🔄 Loading {model_file} from {model_name} on {self.device}...")
+            
+            # Check if we need to download the model
+            model_path = self.download_or_get_model(model_name, model_file)
+            
+            # Initialize llama-cpp-python for GGUF model
+            from llama_cpp import Llama
+            
+            # Configure llama-cpp-python for embedding generation
+            self.embedding_model = Llama(
+                model_path=model_path,
+                n_ctx=32768,  # 32k context window
+                n_gpu_layers=0 if str(self.device) == "cpu" else -1,  # Use GPU if available
+                verbose=False,
+                embedding=True,  # Enable embedding mode
+                n_threads=os.cpu_count() if str(self.device) == "cpu" else 1
+            )
+            
             print_memory_usage()
             
             # Get model information
-            embedding_dim = self.embedding_model.get_sentence_embedding_dimension()
+            embedding_dim = 4096  # Qwen3-Embedding-8B has 8192 dimensions
             print(f"✅ Embedding model loaded successfully!")
-            print(f"   Model: {model_name}")
+            print(f"   Model: {model_file}")
+            print(f"   Source: {model_name}")
+            print(f"   Device: {self.device}")
             print(f"   Embedding dimension: {embedding_dim}")
             print(f"   Context length: 32k tokens")
             print(f"   Multilingual support: 100+ languages")
+            print(f"   Precision: Q8_0 (8-bit quantization)")
+            print(f"   Model size: ~8.6 GB")
             
             # Test the model with a simple sentence
             test_text = "This is a test sentence for the embedding model."
-            test_embedding = self.embedding_model.encode(test_text)
-            print(f"   Test embedding created: {len(test_embedding)} dimensions")
+            print(f"   🧪 Testing model with: '{test_text}'")
+            test_embedding = self.create_embedding(test_text)
+            print(f"   ✅ Test embedding created: {len(test_embedding)} dimensions")
             
         except Exception as e:
             print(f"❌ Error loading embedding model: {e}")
             raise Exception("Failed to initialize embedding model - cannot proceed without embeddings")
+    
+    def download_or_get_model(self, model_name: str, model_file: str) -> str:
+        """Download the GGUF model file if it doesn't exist locally"""
+        from huggingface_hub import hf_hub_download
+        
+        try:
+            print(f"📥 Checking for {model_file}...")
+            
+            # Try to download from Hugging Face Hub
+            model_path = hf_hub_download(
+                repo_id=model_name,
+                filename=model_file,
+                cache_dir="./models"  # Cache in local models directory
+            )
+            
+            print(f"✅ Model downloaded/loaded from: {model_path}")
+            return model_path
+            
+        except Exception as e:
+            print(f"❌ Error downloading model: {e}")
+            print(f"💡 Please ensure you have access to {model_name}")
+            print(f"💡 You may need to login with: huggingface-cli login")
+            raise Exception(f"Failed to download model {model_file}")
+    
+    def create_embedding(self, text: str) -> List[float]:
+        """Create embedding for full PDF text content using GGUF model"""
+        try:
+            # Qwen3-Embedding-8B can handle up to 32k tokens
+            # Approximate: 1 token ≈ 4 characters, so 32k tokens ≈ 128k characters
+            max_chars = 128000  # Increased limit for full PDFs
+            
+            if len(text) > max_chars:
+                print(f"⚠️ PDF text ({len(text)} chars) exceeds 32k token limit")
+                print(f"   Truncating to {max_chars} characters for embedding")
+                text = text[:max_chars]
+            else:
+                print(f"✅ Processing full PDF text: {len(text)} characters")
+            
+            # Create embedding using llama-cpp-python
+            embedding = self.embedding_model.embed(text)
+            
+            # Debug: print the type and shape of the embedding
+            print(f"   🔍 Debug: embedding type: {type(embedding)}")
+            if hasattr(embedding, 'shape'):
+                print(f"   🔍 Debug: embedding shape: {embedding.shape}")
+            elif isinstance(embedding, list):
+                print(f"   🔍 Debug: embedding length: {len(embedding)}")
+            
+            # Handle different return types from llama-cpp-python
+            if hasattr(embedding, 'tolist'):
+                # If it's a numpy array, convert to list
+                embedding_list = embedding.tolist()
+                print(f"   🔍 Debug: converted from numpy array")
+            elif isinstance(embedding, list):
+                # If it's already a Python list, use it directly
+                embedding_list = embedding
+                print(f"   🔍 Debug: using Python list directly")
+            else:
+                # Fallback: convert to list if possible
+                embedding_list = list(embedding)
+                print(f"   🔍 Debug: converted using list() fallback")
+            
+            # Check if embedding is valid (not all zeros)
+            if all(x == 0.0 for x in embedding_list):
+                raise ValueError("Generated embedding contains only zeros")
+            
+            # Additional validation
+            if not isinstance(embedding_list, list):
+                raise ValueError(f"Expected list, got {type(embedding_list)}")
+            
+            if len(embedding_list) == 0:
+                raise ValueError("Generated embedding is empty")
+            
+            # Check for expected dimension (Qwen3-Embedding-8B should be 4096)
+            expected_dim = 4096
+            if len(embedding_list) != expected_dim:
+                print(f"⚠️ Warning: Expected {expected_dim} dimensions, got {len(embedding_list)}")
+            
+            print(f"✅ Created embedding for full PDF: {len(embedding_list)} dimensions")
+            return embedding_list
+            
+        except Exception as e:
+            print(f"❌ Error creating embedding: {str(e)}")
+            raise Exception(f"Embedding generation failed: {str(e)}")
     
     def setup_retry_system(self):
         """Setup the retry system for failed embeddings"""
@@ -276,6 +394,7 @@ class PDFToPostgreSQLProcessor:
         try:
             # Connect to PostgreSQL
             self.conn = psycopg2.connect(self.database_url)
+            self.conn.autocommit = True
             
             # Enable pgvector extension
             with self.conn.cursor() as cursor:
@@ -353,10 +472,14 @@ class PDFToPostgreSQLProcessor:
         
         # Simple list of free models to try in order
         self.models = [
+            # "qwen/qwen3-235b-a22b:free",
+            "meta-llama/llama-3.3-70b-instruct:free",
+            "deepseek/deepseek-chat-v3-0324:free",
+            "deepseek/deepseek-r1-0528:free",
             "google/gemini-2.0-flash-exp:free",
-            "meta-llama/llama-3.3-70b-instruct:free", 
-            "qwen/qwen3-8b:free",
             "anthropic/claude-3-haiku:free",
+            "qwen/qwen3-8b:free",
+            "deepseek/deepseek-r1-0528-qwen3-8b:free",
             "mistralai/mistral-7b-instruct:free"
         ]
         
@@ -451,41 +574,6 @@ class PDFToPostgreSQLProcessor:
             print(f"❌ Error reading PDF: {e}")
             raise
     
-    def create_embedding(self, text: str) -> List[float]:
-        """Create embedding for full PDF text content"""
-        try:
-            # Qwen3-Embedding-8B can handle up to 32k tokens
-            # Approximate: 1 token ≈ 4 characters, so 32k tokens ≈ 128k characters
-            max_chars = 128000  # Increased limit for full PDFs
-            
-            if len(text) > max_chars:
-                print(f"⚠️ PDF text ({len(text)} chars) exceeds 32k token limit")
-                print(f"   Truncating to {max_chars} characters for embedding")
-                text = text[:max_chars]
-            else:
-                print(f"✅ Processing full PDF text: {len(text)} characters")
-            
-            # Create embedding for the full document
-            embedding = self.embedding_model.encode(
-                text,
-                convert_to_numpy=False,
-                show_progress_bar=False
-            )
-            
-            # Convert to list and ensure it's not all zeros
-            embedding_list = embedding.tolist()
-            
-            # Check if embedding is valid (not all zeros)
-            if all(x == 0.0 for x in embedding_list):
-                raise ValueError("Generated embedding contains only zeros")
-            
-            print(f"✅ Created embedding for full PDF: {len(embedding_list)} dimensions")
-            return embedding_list
-            
-        except Exception as e:
-            print(f"❌ Error creating embedding: {str(e)}")
-            raise Exception(f"Embedding generation failed: {str(e)}")
-    
     def extract_structured_information(self, pdf_text: str, pdf_filename: str) -> Dict[str, Any]:
         """Extract structured information from PDF text using OpenRouter LLM"""
         print(f"Extracting structured information from {pdf_filename}...")
@@ -508,7 +596,7 @@ class PDFToPostgreSQLProcessor:
         3. **child_age**: Approximate age of the child (if mentioned)
         5. **risk_types**: Array of risk types identified (e.g., ["neglect", "abuse", "domestic_violence"])
         6. **outcome**: What happened to the child/family
-        7. **review_date**: Date of the review (if mentioned)
+        7. **review_date**: Date of the review in YYYY-MM-DD format (e.g., "2025-01-01"). If only year is known, use YYYY-01-01 format.
         8. **agencies**: Array of agencies involved (e.g., ["social_services", "police", "school"])
         9. **warning_signs_early**: Array of early warning signs identified
         10. **risk_factors**: Array of risk factors identified
@@ -536,13 +624,15 @@ class PDFToPostgreSQLProcessor:
             }},
             "timeline": [
                 {{
-                    "date": "date or period",
+                    "date": "2023-01-01",
                     "description": "what is the event and what happened",
                     "type": "missed_opportunity|critical_incident|concern_raised|positive_practice|other",
                     "impact": "significance of this event",
                 }}
             ]
         }}
+
+        IMPORTANT: All dates must be in YYYY-MM-DD format. If only a year is known, use YYYY-01-01 format (e.g., "2025" becomes "2025-01-01").
 
         Document text:
         {pdf_text}
@@ -552,6 +642,8 @@ class PDFToPostgreSQLProcessor:
         structured_data = self.try_models_in_order(prompt)
         
         if structured_data:
+            # Validate and fix date formats
+            structured_data = self.validate_and_fix_dates(structured_data)
             print("✅ Structured information extracted successfully using LLM")
             return structured_data
         else:
@@ -568,8 +660,15 @@ class PDFToPostgreSQLProcessor:
             # Generate file hash for uniqueness
             file_hash = hashlib.md5(Path(pdf_path).name.encode()).hexdigest()
             
+            # Format review_date properly for PostgreSQL
+            review_date = self.format_date_for_database(structured_info.get('review_date'))
+            if review_date:
+                print(f"   📅 Using formatted review_date: {review_date}")
+            else:
+                print(f"   ⚠️ No valid review_date found, will use NULL")
+            
             # Start transaction
-            self.conn.autocommit = False
+            # self.conn.autocommit = True
             
             with self.conn.cursor() as cursor:
                 # Check if file already exists
@@ -592,7 +691,7 @@ class PDFToPostgreSQLProcessor:
                         structured_info.get('child_age'),
                         Json(structured_info.get('risk_types', [])),
                         structured_info.get('outcome'),
-                        structured_info.get('review_date'),
+                        review_date,
                         Json(structured_info.get('agencies', [])),
                         Json(structured_info.get('warning_signs_early', [])),
                         Json(structured_info.get('risk_factors', [])),
@@ -613,6 +712,8 @@ class PDFToPostgreSQLProcessor:
                         # Insert new timeline events
                         for event in timeline_events:
                             if isinstance(event, dict):
+                                # Format event date properly - use 'date' field from extracted data
+                                event_date = self.format_date_for_database(event.get('date'))
                                 cursor.execute("""
                                     INSERT INTO timeline_events (
                                         case_review_id, event_date, event_type, description, 
@@ -621,11 +722,10 @@ class PDFToPostgreSQLProcessor:
                                     VALUES (%s, %s, %s, %s, %s)
                                 """, (
                                     record_id,
-                                    event.get('date'),
-                                    event.get('type', 'other'),
+                                    event_date,
+                                    event.get('type', 'other'),  # Use 'type' field from extracted data
                                     event.get('description', ''),
-                                    event.get('impact', ''),
-                                  
+                                    event.get('impact', '')
                                 ))
                         
                         print(f"✅ Updated {len(timeline_events)} timeline events")
@@ -645,7 +745,7 @@ class PDFToPostgreSQLProcessor:
                         structured_info.get('child_age'),
                         Json(structured_info.get('risk_types', [])),
                         structured_info.get('outcome'),
-                        structured_info.get('review_date'),
+                        review_date,
                         Json(structured_info.get('agencies', [])),
                         Json(structured_info.get('warning_signs_early', [])),
                         Json(structured_info.get('risk_factors', [])),
@@ -667,6 +767,8 @@ class PDFToPostgreSQLProcessor:
                     # Insert new timeline events
                     for event in timeline_events:
                         if isinstance(event, dict):
+                            # Format event date properly - use 'date' field from extracted data
+                            event_date = self.format_date_for_database(event.get('date'))
                             cursor.execute("""
                                 INSERT INTO timeline_events (
                                     case_review_id, event_date, event_type, description, 
@@ -675,24 +777,18 @@ class PDFToPostgreSQLProcessor:
                                 VALUES (%s, %s, %s, %s, %s)
                             """, (
                                 record_id,
-                                event.get('date'),
-                                event.get('type', 'other'),
+                                event_date,
+                                event.get('type', 'other'),  # Use 'type' field from extracted data
                                 event.get('description', ''),
                                 event.get('impact', '')
                             ))
                     
                     print(f"✅ Saved {len(timeline_events)} timeline events (METHOD 1)")
                 
-                # Commit transaction for METHOD 1
-                self.conn.commit()
-                self.conn.autocommit = True
                 
                 return record_id
                 
         except Exception as e:
-            # Rollback transaction on error for METHOD 1
-            self.conn.rollback()
-            self.conn.autocommit = True
             print(f"❌ Error saving to database: {e}")
             raise
     
@@ -772,8 +868,15 @@ class PDFToPostgreSQLProcessor:
             # Generate file hash for uniqueness
             file_hash = hashlib.md5(Path(pdf_path).name.encode()).hexdigest()
             
-            # Start transaction for METHOD 2
-            self.conn.autocommit = False
+            # Ensure we're not in a transaction by setting autocommit
+            # self.conn.autocommit = True
+            
+            # Format review_date properly for PostgreSQL
+            review_date = self.format_date_for_database(structured_info.get('review_date'))
+            if review_date:
+                print(f"   📅 Using formatted review_date: {review_date}")
+            else:
+                print(f"   ⚠️ No valid review_date found, will use NULL")
             
             with self.conn.cursor() as cursor:
                 # Check if file already exists
@@ -795,7 +898,7 @@ class PDFToPostgreSQLProcessor:
                         structured_info.get('child_age'),
                         Json(structured_info.get('risk_types', [])),
                         structured_info.get('outcome'),
-                        structured_info.get('review_date'),
+                        review_date,
                         Json(structured_info.get('agencies', [])),
                         Json(structured_info.get('warning_signs_early', [])),
                         Json(structured_info.get('risk_factors', [])),
@@ -821,7 +924,7 @@ class PDFToPostgreSQLProcessor:
                         structured_info.get('child_age'),
                         Json(structured_info.get('risk_types', [])),
                         structured_info.get('outcome'),
-                        structured_info.get('review_date'),
+                        review_date,
                         Json(structured_info.get('agencies', [])),
                         Json(structured_info.get('warning_signs_early', [])),
                         Json(structured_info.get('risk_factors', [])),
@@ -842,6 +945,8 @@ class PDFToPostgreSQLProcessor:
                     # Insert new timeline events
                     for event in timeline_events:
                         if isinstance(event, dict):
+                            # Format event date properly
+                            event_date = self.format_date_for_database(event.get('date'))
                             cursor.execute("""
                                 INSERT INTO timeline_events (
                                     case_review_id, event_date, event_type, description, 
@@ -850,24 +955,22 @@ class PDFToPostgreSQLProcessor:
                                 VALUES (%s, %s, %s, %s, %s)
                             """, (
                                 record_id,
-                                event.get('date'),
-                                event.get('type', 'other'),
+                                event_date,
+                                event.get('type', 'other'),  # Use 'type' field from extracted data
                                 event.get('description', ''),
                                 event.get('impact', '')
                             ))
                     
                     print(f"✅ Saved {len(timeline_events)} timeline events (METHOD 2)")
                 
-                # Commit transaction for METHOD 2
-                self.conn.commit()
-                self.conn.autocommit = True
+                # Commit the transaction
+                # self.conn.commit()
                 
                 return record_id
                 
         except Exception as e:
-            # Rollback transaction on error for METHOD 2
+            # Rollback transaction on error
             self.conn.rollback()
-            self.conn.autocommit = True
             print(f"❌ Error saving to database: {e}")
             raise
     
@@ -876,7 +979,7 @@ class PDFToPostgreSQLProcessor:
         print(f"\nSearching for: '{query_text[:100]}...'")
         
         try:
-            # Create embedding for query
+            # Create embedding for query using GGUF model
             query_embedding = self.create_embedding(query_text)
             
             with self.conn.cursor(cursor_factory=RealDictCursor) as cursor:
@@ -1007,6 +1110,100 @@ class PDFToPostgreSQLProcessor:
             print(f"❌ Error getting database stats: {e}")
             return {}
     
+    def validate_and_fix_dates(self, structured_data: Dict[str, Any]) -> Dict[str, Any]:
+        """Validate and fix date formats in structured data before database insertion"""
+        print("Validating and fixing date formats...")
+        
+        # Fix review_date
+        if 'review_date' in structured_data:
+            original_date = structured_data['review_date']
+            fixed_date = self.format_date_for_database(original_date)
+            if fixed_date != original_date:
+                print(f"   📅 Fixed review_date: '{original_date}' → '{fixed_date}'")
+                structured_data['review_date'] = fixed_date
+        
+        # Fix timeline event dates
+        if 'timeline' in structured_data and isinstance(structured_data['timeline'], list):
+            for i, event in enumerate(structured_data['timeline']):
+                if isinstance(event, dict) and 'date' in event:
+                    original_date = event['date']
+                    fixed_date = self.format_date_for_database(original_date)
+                    if fixed_date != original_date:
+                        print(f"   📅 Fixed timeline[{i}] date: '{original_date}' → '{fixed_date}'")
+                        event['date'] = fixed_date
+        
+        return structured_data
+
+    def format_date_for_database(self, date_value: Any) -> Optional[str]:
+        """Format date values for PostgreSQL database insertion"""
+        if not date_value:
+            return None
+        
+        # If it's already a string in proper date format, return as is
+        if isinstance(date_value, str):
+            # Check if it's just a year (e.g., "2025")
+            if len(date_value) == 4 and date_value.isdigit():
+                # Convert year to January 1st of that year
+                return f"{date_value}-01-01"
+            
+            # Check if it's a valid date format
+            try:
+                # Try to parse common date formats
+                from datetime import datetime
+                
+                # Common formats to try
+                date_formats = [
+                    "%Y-%m-%d",      # 2025-01-01
+                    "%d/%m/%Y",      # 01/01/2025
+                    "%m/%d/%Y",      # 01/01/2025
+                    "%Y-%m",         # 2025-01
+                    "%B %Y",         # January 2025
+                    "%b %Y",         # Jan 2025
+                    "%Y",            # 2025
+                ]
+                
+                for fmt in date_formats:
+                    try:
+                        parsed_date = datetime.strptime(date_value, fmt)
+                        if fmt == "%Y-%m":
+                            return parsed_date.strftime("%Y-%m-01")
+                        elif fmt in ["%B %Y", "%b %Y", "%Y"]:
+                            return parsed_date.strftime("%Y-01-01")
+                        else:
+                            return parsed_date.strftime("%Y-%m-%d")
+                    except ValueError:
+                        continue
+                
+                # If none of the formats work, try to extract year and use January 1st
+                import re
+                year_match = re.search(r'\b(19|20)\d{2}\b', date_value)
+                if year_match:
+                    year = year_match.group()
+                    return f"{year}-01-01"
+                
+                print(f"⚠️ Could not parse date: {date_value}, setting to NULL")
+                return None
+                
+            except Exception as e:
+                print(f"⚠️ Error parsing date '{date_value}': {e}, setting to NULL")
+                return None
+        
+        # If it's a datetime object, format it
+        elif hasattr(date_value, 'strftime'):
+            return date_value.strftime("%Y-%m-%d")
+        
+        # If it's a number (year), convert to date
+        elif isinstance(date_value, (int, float)):
+            year = int(date_value)
+            if 1900 <= year <= 2100:  # Reasonable year range
+                return f"{year}-01-01"
+            else:
+                print(f"⚠️ Invalid year: {year}, setting to NULL")
+                return None
+        
+        print(f"⚠️ Unknown date type: {type(date_value)}, value: {date_value}, setting to NULL")
+        return None
+
     def close(self):
         """Close database connection"""
         if hasattr(self, 'conn'):
@@ -1015,43 +1212,16 @@ class PDFToPostgreSQLProcessor:
 
 
 def main():
-    """Main function to process PDFs with retry system demonstration"""
+    """Main function to process a specific PDF file"""
     
-    # Example PDF path - update this to your PDF location
-    # pdf_path = "/Users/quhamadefila/Desktop/childrens_sw/nspcc_case_reviews/2023EnfieldAndreCSPR.pdf"
-    pdf_path = input("Enter the path to your PDF file: ").strip()
+    # Specific PDF path for processing
+    pdf_path = "/Users/quhamadefila/Desktop/childrens_sw/nspcc_case_reviews/2025TorbayCSPRC110C111C112.pdf"
     
-    if not pdf_path:
-        print("❌ No PDF path provided. Exiting.")
-        return
+    print(f"🎯 Processing PDF: {pdf_path}")
     
     # Initialize processor
     try:
         processor = PDFToPostgreSQLProcessor()
-        
-        # Demonstrate retry system functionality
-        print("\n" + "="*60)
-        print("🔄 RETRY SYSTEM DEMONSTRATION")
-        print("="*60)
-        
-        # Show current retry list
-        retry_list = processor.get_retry_list()
-        print(f"\n📋 Current Retry List ({len(retry_list)} PDFs):")
-        if retry_list:
-            for i, entry in enumerate(retry_list, 1):
-                print(f"   {i}. {entry['pdf_name']} (attempts: {entry['retry_count']})")
-        else:
-            print("   No PDFs in retry list")
-        
-        # Demonstrate retry functionality
-        if retry_list:
-            print(f"\n🔄 Retrying failed embeddings...")
-            successful_retries = processor.retry_failed_embeddings(max_retries=3)
-            
-            if successful_retries:
-                print(f"\n✅ Successfully retried {len(successful_retries)} embeddings")
-            else:
-                print(f"\n⚠️ No embeddings were successfully retried")
         
         print("\n" + "="*60)
         print("📄 PDF PROCESSING")
@@ -1063,6 +1233,7 @@ def main():
             print(f"\n🎉 PDF processed successfully! Record ID: {record_id}")
         else:
             print(f"❌ PDF file not found: {pdf_path}")
+            return
             
         # Show database stats
         stats = processor.get_database_stats()
@@ -1072,14 +1243,6 @@ def main():
         print(f"   Average text length: {stats.get('average_text_length', 0)} characters")
         print(f"   Total timeline events: {stats.get('total_timeline_events', 0)}")
         print(f"   Total users: {stats.get('total_users', 0)}")
-        
-        # Show final retry list status
-        final_retry_list = processor.get_retry_list()
-        print(f"\n📋 Final Retry List Status:")
-        print(f"   PDFs waiting for embedding: {len(final_retry_list)}")
-        if final_retry_list:
-            print(f"   Retry file location: {processor.retry_file}")
-            print(f"   You can run retry_failed_embeddings() later to process these")
         
         # Example search
         print(f"\n🔍 Example search:")

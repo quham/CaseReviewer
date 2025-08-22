@@ -1,9 +1,20 @@
 import { Button } from '@/components/ui/button';
 import { useAuthStore } from '@/lib/auth';
+import { useLocation } from 'wouter';
 import { User, LogOut } from 'lucide-react';
 
 export function Header() {
   const { user, logout } = useAuthStore();
+  const [, setLocation] = useLocation();
+
+  const handleProfileClick = () => {
+    setLocation('/profile');
+  };
+
+  const handleLogout = () => {
+    logout();
+    setLocation('/login');
+  };
 
   return (
     <header className="bg-white border-b border-neutral-200 sticky top-0 z-50">
@@ -27,6 +38,7 @@ export function Header() {
               size="sm"
               className="text-neutral-700 hover:bg-neutral-100"
               data-testid="button-profile"
+              onClick={handleProfileClick}
             >
               <User className="w-4 h-4 mr-2" />
               Profile
@@ -35,7 +47,7 @@ export function Header() {
             <Button
               variant="destructive"
               size="sm"
-              onClick={logout}
+              onClick={handleLogout}
               data-testid="button-logout"
             >
               <LogOut className="w-4 h-4 mr-2" />

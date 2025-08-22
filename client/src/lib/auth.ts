@@ -1,6 +1,9 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
+// API base URL - update this to match your backend
+const API_BASE_URL = 'http://localhost:8000';
+
 interface User {
   id: string;
   username: string;
@@ -27,7 +30,7 @@ export const useAuthStore = create<AuthStore>()(
       login: async (username: string, password: string) => {
         set({ isLoading: true });
         try {
-          const response = await fetch('/api/login', {
+          const response = await fetch(`${API_BASE_URL}/api/login`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -58,7 +61,7 @@ export const useAuthStore = create<AuthStore>()(
 
         set({ isLoading: true });
         try {
-          const response = await fetch('/api/protected/me', {
+          const response = await fetch(`${API_BASE_URL}/api/protected/me`, {
             headers: {
               Authorization: `Bearer ${token}`,
             },

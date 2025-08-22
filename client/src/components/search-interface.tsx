@@ -3,13 +3,15 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent } from '@/components/ui/card';
 import { Search, History, Info } from 'lucide-react';
 import { searchCaseReviews, type SearchFilters, type SearchResult } from '@/lib/search-api';
 import { useToast } from '@/hooks/use-toast';
+import { usePreferencesStore } from '@/lib/preferences';
 
 interface SearchInterfaceProps {
-  onResults: (results: SearchResult[], searchTime: number, totalCount: number) => void;
+  onResults: (results: SearchResult[], searchTime: number, totalCount: number, aiRecommendations?: any, message?: string, filters?: SearchFilters) => void;
   onSearchStart: () => void;
   onSearchEnd: () => void;
 }
@@ -18,6 +20,23 @@ export function SearchInterface({ onResults, onSearchStart, onSearchEnd }: Searc
   const [query, setQuery] = useState('');
   const [filters, setFilters] = useState<SearchFilters>({});
   const { toast } = useToast();
+  const { searchHistoryEnabled } = usePreferencesStore();
+
+  // Function to sort results by risk type matches
+  const sortResultsByRiskType = (results: SearchResult[], selectedRiskTypes?: string[]): SearchResult[] => {
+    if (!selectedRiskTypes || selectedRiskTypes.length === 0) {
+      return results; // No sorting needed if no risk types selected
+    }
+
+    return [...results].sort((a, b) => {
+      const aMatches = a.risk_types?.some(type => selectedRiskTypes.includes(type)) || false;
+      const bMatches = b.risk_types?.some(type => selectedRiskTypes.includes(type)) || false;
+      
+      if (aMatches && !bMatches) return -1; // a comes first
+      if (!aMatches && bMatches) return 1;  // b comes first
+      return 0; // both match or both don't match, maintain original order
+    });
+  };
 
   const handleSearch = async () => {
     if (!query.trim()) {
@@ -33,12 +52,36 @@ export function SearchInterface({ onResults, onSearchStart, onSearchEnd }: Searc
     
     try {
       const response = await searchCaseReviews(query, filters);
-      onResults(response.results, response.searchTime, response.totalCount);
+      const sortedResults = sortResultsByRiskType(response.results, filters.riskType);
       
-      toast({
-        title: "Search Completed",
-        description: `Found ${response.totalCount} relevant case reviews in ${(response.searchTime / 1000).toFixed(1)} seconds`,
-      });
+      // Pass the selected risk types along with the results for highlighting
+      const resultsWithFilters = {
+        results: sortedResults,
+        selectedRiskTypes: filters.riskType || [],
+        searchTime: response.searchTime,
+        totalCount: response.totalCount,
+        aiRecommendations: response.ai_recommendations,
+        message: response.message
+      };
+      
+      onResults(sortedResults, response.searchTime, response.totalCount, response.ai_recommendations, response.message, filters);
+      
+      // Show a toast based on whether we got results or just general guidance
+      if (sortedResults.length > 0) {
+        const aiMessage = response.ai_recommendations ? ' with AI-powered insights' : '';
+        const riskTypeMessage = filters.riskType && filters.riskType.length > 0 
+          ? ` (${filters.riskType.length} risk type${filters.riskType.length > 1 ? 's' : ''} selected)`
+          : '';
+        toast({
+          title: "Search Completed",
+          description: `Found ${response.totalCount} relevant case reviews${response.searchTime > 0 ? ` in ${(response.searchTime / 1000).toFixed(1)} seconds` : ''}${aiMessage}${riskTypeMessage}`,
+        });
+      } else if (response.message) {
+        toast({
+          title: "Professional Guidance Available",
+          description: "No case matches found, but general professional guidance has been provided below.",
+        });
+      }
     } catch (error) {
       toast({
         title: "Search Failed",
@@ -55,117 +98,127 @@ export function SearchInterface({ onResults, onSearchStart, onSearchEnd }: Searc
 
   return (
     <Card className="mb-8">
-      <CardContent className="p-6">
-        <div className="mb-4">
-          <Label htmlFor="case-search" className="block text-sm font-medium text-neutral-700 mb-2">
-            Describe your current case situation
-          </Label>
-          <div className="relative">
+      <CardContent className="pt-6">
+        <div className="space-y-6">
+          <div>
+            <Label htmlFor="search-query" className="text-base font-medium text-gray-900 mb-3 block">
+              Describe the case you're working on
+            </Label>
             <Textarea
-              id="case-search"
-              rows={4}
-              className="w-full px-4 py-3 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-secondary focus:border-transparent resize-none"
-              placeholder="Example: Emma, age 6, living with mother (24) and mother's new partner (31) of 8 months. Historical DV with Emma's father who has supervised contact monthly. Mother reports new partner 'loses temper' with Emma, particularly around bedtime routines..."
+              id="search-query"
+              placeholder="e.g., A 7-year-old child with unexplained bruising, parents give inconsistent explanations, child appears withdrawn and anxious around father..."
               value={query}
               onChange={(e) => setQuery(e.target.value)}
+              className="min-h-[120px] resize-none"
               maxLength={maxCharacters}
-              data-testid="textarea-case-search"
             />
-            <div className="absolute bottom-3 right-3 text-xs text-neutral-400">
-              <span data-testid="text-character-count">{characterCount}</span>/{maxCharacters} characters
+            <div className="flex justify-between items-center mt-2">
+              <span className="text-sm text-gray-500">
+                Be as detailed as possible for better case matches
+              </span>
+              <span className={`text-sm ${characterCount > maxCharacters * 0.9 ? 'text-orange-600' : 'text-gray-500'}`}>
+                {characterCount}/{maxCharacters}
+              </span>
             </div>
           </div>
-        </div>
-        
-        {/* Search Filters */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-          <div>
-            <Label className="block text-sm font-medium text-neutral-700 mb-1">Child Age Range</Label>
-            <Select value={filters.childAge || 'Any age'} onValueChange={(value) => setFilters({...filters, childAge: value})}>
-              <SelectTrigger data-testid="select-child-age">
-                <SelectValue placeholder="Any age" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Any age">Any age</SelectItem>
-                <SelectItem value="0-5 years">0-5 years</SelectItem>
-                <SelectItem value="6-11 years">6-11 years</SelectItem>
-                <SelectItem value="12-17 years">12-17 years</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          
-          <div>
-            <Label className="block text-sm font-medium text-neutral-700 mb-1">Risk Type</Label>
-            <Select value={filters.riskType || 'All types'} onValueChange={(value) => setFilters({...filters, riskType: value})}>
-              <SelectTrigger data-testid="select-risk-type">
-                <SelectValue placeholder="All types" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="All types">All types</SelectItem>
-                <SelectItem value="Domestic violence">Domestic violence</SelectItem>
-                <SelectItem value="Neglect">Neglect</SelectItem>
-                <SelectItem value="Physical abuse">Physical abuse</SelectItem>
-                <SelectItem value="Emotional abuse">Emotional abuse</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          
-          <div>
-            <Label className="block text-sm font-medium text-neutral-700 mb-1">Case Outcome</Label>
-            <Select value={filters.outcome || 'All outcomes'} onValueChange={(value) => setFilters({...filters, outcome: value})}>
-              <SelectTrigger data-testid="select-outcome">
-                <SelectValue placeholder="All outcomes" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="All outcomes">All outcomes</SelectItem>
-                <SelectItem value="Successful intervention">Successful intervention</SelectItem>
-                <SelectItem value="Ongoing support">Ongoing support</SelectItem>
-                <SelectItem value="Case closure">Case closure</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          
-          <div>
-            <Label className="block text-sm font-medium text-neutral-700 mb-1">Review Date</Label>
-            <Select value={filters.reviewDate || 'Any date'} onValueChange={(value) => setFilters({...filters, reviewDate: value})}>
-              <SelectTrigger data-testid="select-review-date">
-                <SelectValue placeholder="Any date" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Any date">Any date</SelectItem>
-                <SelectItem value="Last 2 years">Last 2 years</SelectItem>
-                <SelectItem value="Last 5 years">Last 5 years</SelectItem>
-                <SelectItem value="Last 10 years">Last 10 years</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
 
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <Button
-              className="bg-secondary hover:bg-blue-600 text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center"
-              onClick={handleSearch}
-              disabled={!query.trim()}
-              data-testid="button-search"
-            >
-              <Search className="w-4 h-4 mr-2" />
-              Search Case Reviews
-            </Button>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label className="block text-sm font-medium text-neutral-700 mb-1">
+                Case Type {filters.riskType && filters.riskType.length > 0 && (
+                  <span className="ml-2 text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">
+                    {filters.riskType.length} selected
+                  </span>
+                )}
+              </Label>
+              <p className="text-xs text-neutral-500 mb-2">Select one or more case types (leave unchecked for all types)</p>
+              <div className="space-y-2">
+                {[
+                  { value: 'child_abuse', label: 'Child Abuse' },
+                  { value: 'neglect', label: 'Neglect' },
+                  { value: 'domestic_violence', label: 'Domestic Violence' },
+                  { value: 'sexual_abuse', label: 'Sexual Abuse' },
+                  { value: 'emotional_abuse', label: 'Emotional Abuse' },
+                  { value: 'other', label: 'Other' }
+                ].map((riskType) => (
+                  <div key={riskType.value} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={riskType.value}
+                      checked={filters.riskType?.includes(riskType.value) || false}
+                      onCheckedChange={(checked) => {
+                        const currentTypes = filters.riskType || [];
+                        if (checked) {
+                          setFilters({ ...filters, riskType: [...currentTypes, riskType.value] });
+                        } else {
+                          setFilters({ ...filters, riskType: currentTypes.filter(type => type !== riskType.value) });
+                        }
+                      }}
+                    />
+                    <Label htmlFor={riskType.value} className="text-sm text-neutral-600 cursor-pointer">
+                      {riskType.label}
+                    </Label>
+                  </div>
+                ))}
+                {filters.riskType && filters.riskType.length > 0 && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-xs text-neutral-500 hover:text-neutral-700 mt-2 h-6 px-2"
+                    onClick={() => setFilters({ ...filters, riskType: undefined })}
+                  >
+                    Clear All
+                  </Button>
+                )}
+              </div>
+            </div>
             
-            <Button 
-              variant="ghost"
-              className="text-neutral-600 hover:text-neutral-800 px-4 py-3 rounded-lg transition-colors"
-              data-testid="button-search-history"
-            >
-              <History className="w-4 h-4 mr-2" />
-              Search History
-            </Button>
+            <div>
+              <Label className="block text-sm font-medium text-neutral-700 mb-1">Review Date</Label>
+              <Select value={filters.reviewDate || 'any'} onValueChange={(value) => setFilters({ ...filters, reviewDate: value === 'any' ? undefined : value })}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Any date" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="any">Any date</SelectItem>
+                  <SelectItem value="last_2_years">Last 2 years</SelectItem>
+                  <SelectItem value="last_5_years">Last 5 years</SelectItem>
+                  <SelectItem value="last_10_years">Last 10 years</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
-          
-          <div className="text-sm text-neutral-500 flex items-center">
-            <Info className="w-4 h-4 mr-1" />
-            Search queries are not stored for privacy protection
+
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <Button
+                className="bg-secondary hover:bg-blue-600 text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center"
+                onClick={handleSearch}
+                disabled={!query.trim()}
+                data-testid="button-search"
+              >
+                <Search className="w-4 h-4 mr-2" />
+                Search Case Reviews
+              </Button>
+              
+              {searchHistoryEnabled && (
+                <Button 
+                  variant="ghost"
+                  className="text-neutral-600 hover:text-neutral-800 px-4 py-3 rounded-lg transition-colors"
+                  data-testid="button-search-history"
+                >
+                  <History className="w-4 h-4 mr-2" />
+                  Search History
+                </Button>
+              )}
+            </div>
+            
+            <div className="text-sm text-neutral-500 flex items-center">
+              <Info className="w-4 h-4 mr-1" />
+              {searchHistoryEnabled 
+                ? "Search history is enabled for quick access to recent searches"
+                : "Search queries are not stored for privacy protection"
+              }
+            </div>
           </div>
         </div>
       </CardContent>

@@ -1,0 +1,37 @@
+{
+  "/Users/quhamadefila/Desktop/childrens_sw/nspcc_case_reviews/2021BexleyChildOCSPR.pdf": {
+    "status": "completed",
+    "timestamp": "2025-08-21T12:58:27.715756",
+    "record_id": 2
+  },
+  "/Users/quhamadefila/Desktop/childrens_sw/nspcc_case_reviews/2021BexleySHIELDBabyRCSPR.pdf": {
+    "status": "failed_database_error",
+    "timestamp": "2025-08-21T13:04:23.434127",
+    "record_id": "SSL connection has been closed unexpectedly\n"
+  },
+  "/Users/quhamadefila/Desktop/childrens_sw/nspcc_case_reviews/2021BirminghamChildAandChildBCSPR.pdf": {
+    "status": "completed",
+    "timestamp": "2025-08-21T13:04:43.483493",
+    "record_id": 3
+  },
+  "/Users/quhamadefila/Desktop/childrens_sw/nspcc_case_reviews/2021BlackburnWithDBLAvaLucasHarperChloeCSPR.pdf": {
+    "status": "completed",
+    "timestamp": "2025-08-21T13:08:52.537018",
+    "record_id": 4
+  },
+  "/Users/quhamadefila/Desktop/childrens_sw/nspcc_case_reviews/2021BlackburnWithDBLMiaCSPR.pdf": {
+    "status": "completed",
+    "timestamp": "2025-08-21T13:09:16.587440",
+    "record_id": 5
+  },
+  "/Users/quhamadefila/Desktop/childrens_sw/nspcc_case_reviews/2021BlackburnWithDarwenBlackpoolAndLancashireRyanNathanAndAmeliaPracticeReview.pdf": {
+    "status": "failed_unknown_error",
+    "timestamp": "2025-08-21T13:09:40.204562",
+    "record_id": "can't adapt type 'dict'"
+  },
+  "/Users/quhamadefila/Desktop/childrens_sw/nspcc_case_reviews/2021BristolGSPeerOnPeerCSPR.pdf": {
+    "status": "interrupted",
+    "timestamp": "2025-08-21T13:11:04.202633",
+    "record_id": null
+  }
+}

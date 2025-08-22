@@ -98,8 +98,8 @@ export default function LoginPage() {
             <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
               <p className="text-sm text-blue-800">
                 <strong>Demo Credentials:</strong><br />
-                Username: sarah.johnson<br />
-                Password: socialworker2024
+                Username: lashonte<br />
+                Password: socialworker2025
               </p>
             </div>
 

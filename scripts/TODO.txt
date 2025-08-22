@@ -1,1 +1,8 @@
 remove duplication between save without embedding
+
+* sometimes it seems events don't show on the timeline
+
+
+remove Key Insight: Timeline shows progression of events and agency responses.
+
+add missed opportunities
